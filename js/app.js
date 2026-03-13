@@ -298,6 +298,29 @@ function map_pair_to_project(pair){
   }
 }
 
+function looks_like_solana_address(value){
+  const trimmed = String(value || "").trim()
+  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(trimmed)
+}
+
+async function fetch_pairs_from_dexscreener(query){
+  const trimmed = String(query || "").trim()
+
+  if (!trimmed) return []
+
+  if (looks_like_solana_address(trimmed)){
+    const url = `https://api.dexscreener.com/token-pairs/v1/solana/${encodeURIComponent(trimmed)}`
+    const res = await fetch(url)
+    const data = await res.json()
+    return Array.isArray(data) ? data : []
+  }
+
+  const url = `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(trimmed)}`
+  const res = await fetch(url)
+  const data = await res.json()
+  return Array.isArray(data.pairs) ? data.pairs : []
+}
+
 async function search_live_tokens(query){
   const trimmed = (query || "").trim()
 
@@ -313,11 +336,7 @@ async function search_live_tokens(query){
   set_search_status(`Searching for "${trimmed}"...`)
 
   try{
-    const url = `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(trimmed)}`
-    const res = await fetch(url)
-    const data = await res.json()
-
-    const pairs = Array.isArray(data.pairs) ? data.pairs : []
+    const pairs = await fetch_pairs_from_dexscreener(trimmed)
 
     const solana_pairs = pairs.filter(pair => {
       return String(pair.chainId || "").toLowerCase() === "solana"
@@ -333,7 +352,8 @@ async function search_live_tokens(query){
       set_search_status(`Loaded ${projects.length} token${projects.length === 1 ? "" : "s"} for "${trimmed}".`)
       show_current()
     }
-  } catch {
+  } catch (err){
+    console.error(err)
     set_search_status("Search failed. Please try again.")
     set_card(null)
   } finally {
@@ -341,6 +361,14 @@ async function search_live_tokens(query){
   }
 }
 
+const sections = document.querySelectorAll(".section")
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add("in_view")
+  })
+}, { threshold: 0.12 })
+
+sections.forEach(section => io.observe(section))
 function bind_events(){
   btn_fren.addEventListener("click", () => {
     handle_vote("fren")
@@ -363,6 +391,13 @@ function bind_events(){
       alert("phase 3 will add accounts. for now you can browse freely.")
     })
   }
+
+  const close_targets = document.querySelectorAll('[data_close="true"]')
+  close_targets.forEach(el => {
+    el.addEventListener("click", () => {
+      close_modal()
+    })
+  })
 
   search_input.addEventListener("input", () => {
     const value = search_input.value || ""
@@ -404,15 +439,6 @@ function bind_events(){
     }
   })
 }
-
-const sections = document.querySelectorAll(".section")
-const io = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add("in_view")
-  })
-}, { threshold: 0.12 })
-
-sections.forEach(section => io.observe(section))
 bind_modal_close()
 bind_events()
 load_starter_projects()
