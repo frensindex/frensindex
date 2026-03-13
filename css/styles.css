@@ -112,13 +112,20 @@ color:#27445D;
 }
 
 .hero{
-  padding:10px 0 34px;
+  position:relative;
+  overflow:hidden;
+  min-height:260px;
+  padding:0;
 }
+
 .hero_grid{
   display:grid;
   grid-template-columns:1fr;
   gap:22px;
   align-items:center;
+  min-height:260px;
+}
+
 }
 
 .hero_title{
@@ -743,7 +750,7 @@ color:#27445D;
 
   animation:cubeFloat 7s ease-in-out infinite;
 
-  opacity:0.16;
+  opacity:0.22;
   pointer-events:none;
   z-index:0;
 
@@ -753,11 +760,11 @@ color:#27445D;
     0 20px 40px rgba(0,0,0,0.10);
 }
 
-.c1{left:10%; top:18%; animation-delay:0s}
-.c2{left:22%; top:44%; animation-delay:0.6s}
-.c3{left:62%; top:16%; animation-delay:1.1s}
-.c4{left:74%; top:52%; animation-delay:1.6s}
-.c5{left:48%; top:72%; animation-delay:2.1s}
+.c1{left:8%; top:20%; animation-delay:0s}
+.c2{left:24%; top:55%; animation-delay:0.6s}
+.c3{left:58%; top:18%; animation-delay:1.1s}
+.c4{left:76%; top:48%; animation-delay:1.6s}
+.c5{left:44%; top:72%; animation-delay:2.1s}
 .c1{background:linear-gradient(145deg,#F5E2B8,#E8C98E)}
 .c2{background:linear-gradient(145deg,#F7D6E6,#E9AFCB)}
 .c3{background:linear-gradient(145deg,#D9F0FF,#A7D9F7)}
