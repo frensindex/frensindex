@@ -774,12 +774,12 @@ color:#27445D;
   inset:0;
   pointer-events:none;
   overflow:visible;
-  z-index:0;
+  z-index:3;
 }
 
 .hero > .container{
   position:relative;
-  z-index:2;
+  z-index:1;
 }
 .cube_inner{
   width:100%;
