@@ -123,7 +123,7 @@ color:#27445D;
   grid-template-columns:1fr;
   gap:22px;
   align-items:center;
-  min-height:220px;
+  min-height:60px;
 }
 
 }
@@ -734,8 +734,8 @@ color:#27445D;
 
 .cube{
   position:absolute;
-  width:80px;
-  height:80px;
+  width:64px;
+  height:64px;
   border-radius:10px;
 
   display:flex;
@@ -802,8 +802,8 @@ color:#27445D;
 
 .face{
   position:absolute;
-  width:80px;
-  height:80px;
+  width:64px;
+  height:64px;
   display:flex;
   align-items:center;
   justify-content:center;
