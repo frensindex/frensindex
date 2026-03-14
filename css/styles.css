@@ -885,6 +885,8 @@ body{
 .section_alt{
   background:rgba(255,255,255,0.35) !important;
   border:none !important;
+  margin-top:-36px;
+  padding-top:80px;
 }
 
 .card{
