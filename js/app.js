@@ -110,6 +110,12 @@ function get_vote_counts(project){
 function save_vote(project, type){
   const store = get_store()
   const key = get_project_key(project)
+
+  // stop duplicate votes
+  if (store[key]?.voted){
+    return
+  }
+
   const current = get_vote_counts(project)
 
   if (type === "fren"){
@@ -118,7 +124,11 @@ function save_vote(project, type){
     current.rug_votes += 1
   }
 
-  store[key] = current
+  store[key] = {
+    ...current,
+    voted: true
+  }
+
   set_store(store)
 }
 
