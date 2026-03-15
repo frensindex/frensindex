@@ -436,6 +436,13 @@ color:#27445D;
   outline:2px solid rgba(111,211,167,0.55);
 }
 
+.swipe_skip{
+  outline:2px solid rgba(31,58,77,0.18);
+  color:#1F3A4D;
+  font-weight:900;
+  font-size:14px;
+}
+
 .card_tap_zone{
   position:absolute;
   inset:0;
