@@ -13,6 +13,8 @@ let discovery_loading = false
 const DISCOVERY_BATCH_SIZE = 24
 const MIN_MARKET_CAP = 30000
 const MAX_AGE_DAYS = 7
+const DAILY_SWIPE_LIMIT_GUEST = 8
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
 const el_name = document.getElementById("card_name")
 const el_ticker = document.getElementById("card_ticker")
 const el_score = document.getElementById("card_score")
@@ -82,7 +84,41 @@ function get_store(){
 function set_store(store){
   localStorage.setItem(VOTE_STORE_KEY, JSON.stringify(store))
 }
+function get_now(){
+  return Date.now()
+}
 
+function is_same_day_vote(timestamp){
+  if (!timestamp) return false
+  return (get_now() - Number(timestamp)) < ONE_DAY_MS
+}
+
+function has_voted_today(project){
+  const store = get_store()
+  const key = get_project_key(project)
+  const saved = store[key]
+
+  if (!saved?.last_voted_at) return false
+
+  return is_same_day_vote(saved.last_voted_at)
+}
+
+function get_guest_swipe_count_today(){
+  const store = get_store()
+  const values = Object.values(store)
+
+  return values.filter(entry => {
+    return entry?.last_voted_at && is_same_day_vote(entry.last_voted_at)
+  }).length
+}
+
+function has_guest_swipes_remaining(){
+  return get_guest_swipe_count_today() < DAILY_SWIPE_LIMIT_GUEST
+}
+
+function can_vote_today(project){
+  return !has_voted_today(project) && has_guest_swipes_remaining()
+}
 function get_project_key(project){
   return (
     project.project_id ||
@@ -103,19 +139,19 @@ function get_vote_counts(project){
 
   return {
     fren_votes: saved?.fren_votes ?? base_fren,
-    rug_votes: saved?.rug_votes ?? base_rug
+    rug_votes: saved?.rug_votes ?? base_rug,
+    last_vote_type: saved?.last_vote_type ?? null,
+    last_voted_at: saved?.last_voted_at ?? null
   }
 }
 
 function save_vote(project, type){
-  const store = get_store()
-  const key = get_project_key(project)
-
-  // stop duplicate votes
-  if (store[key]?.voted){
-    return
+  if (!can_vote_today(project)){
+    return false
   }
 
+  const store = get_store()
+  const key = get_project_key(project)
   const current = get_vote_counts(project)
 
   if (type === "fren"){
@@ -125,13 +161,15 @@ function save_vote(project, type){
   }
 
   store[key] = {
-    ...current,
-    voted: true
+    fren_votes: current.fren_votes,
+    rug_votes: current.rug_votes,
+    last_vote_type: type,
+    last_voted_at: get_now()
   }
 
   set_store(store)
+  return true
 }
-
 function calculate_pack_score(fren_votes, rug_votes){
   const total = fren_votes + rug_votes
   if (total <= 0) return 0
@@ -296,12 +334,22 @@ function handle_vote(type){
   const project = get_current_project()
   if (!project) return
 
-  save_vote(project, type)
+  if (!has_guest_swipes_remaining()){
+    alert("You’ve used all guest swipes for today. Create an account to unlock more.")
+    return
+  }
+
+  const saved = save_vote(project, type)
+
+  if (!saved){
+    alert("You already voted on this project today.")
+    return
+  }
+
   show_feedback(type)
   set_card(project)
   animate_swipe(type === "fren" ? "right" : "left")
 }
-
 async function load_starter_projects(){
   try{
     const res = await fetch("data/projects.json", { cache: "no-store" })
@@ -313,11 +361,13 @@ async function load_starter_projects(){
       }
     })
 
-    const featured_sorted = [...starter_projects].sort((a, b) => {
-      return Number(a.promo_rank || 999) - Number(b.promo_rank || 999)
-    })
+    const featured_sorted = [...starter_projects]
+  .filter(project => !has_voted_today(project))
+  .sort((a, b) => {
+    return Number(a.promo_rank || 999) - Number(b.promo_rank || 999)
+  })
 
-    projects = featured_sorted
+projects = featured_sorted
     current_index = 0
     set_search_status("Search any token to load it into the index.")
     show_current()
@@ -412,10 +462,20 @@ async function fetch_discovery_projects(){
     const pairs = Array.isArray(pairs_data) ? pairs_data : []
 
     const filtered_pairs = pairs.filter(pair => {
-      const chain_ok = String(pair.chainId || "").toLowerCase() === "solana"
-      const not_seen = !seen_pair_addresses.has(pair.pairAddress)
-      return chain_ok && not_seen && qualifies_for_discovery(pair)
-    })
+  const chain_ok = String(pair.chainId || "").toLowerCase() === "solana"
+  const not_seen = !seen_pair_addresses.has(pair.pairAddress)
+
+  const project_like = {
+    project_id: pair.pairAddress,
+    pair_address: pair.pairAddress,
+    token_address: pair.baseToken?.address || "",
+    chart_url: pair.url || ""
+  }
+
+  const not_voted_today = !has_voted_today(project_like)
+
+  return chain_ok && not_seen && not_voted_today && qualifies_for_discovery(pair)
+})
 
     const shuffled_pairs = shuffle_array(filtered_pairs)
 
@@ -476,12 +536,18 @@ async function search_live_tokens(query){
   const trimmed = (query || "").trim()
 
   if (!trimmed){
-    projects = starter_projects.slice()
-    current_index = 0
-    set_search_status("Search any token to load it into the index.")
-    show_current()
-    return
-  }
+  projects = [...starter_projects]
+    .filter(project => !has_voted_today(project))
+    .sort((a, b) => {
+      return Number(a.promo_rank || 999) - Number(b.promo_rank || 999)
+    })
+
+  current_index = 0
+  set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+  show_current()
+  await ensure_discovery_buffer()
+  return
+}
 
   set_loading(true)
   set_search_status(`Searching for "${trimmed}"...`)
