@@ -1,4 +1,7 @@
-let starter_projects = []
+const supabaseUrl = "https://gkqskrhxrfvexxrzcfan.supabase.co"
+const supabaseKey = "sb_publishable_ZJjq7WefqtMN7bLEF6Yffw_kmYpjC6V"
+
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey)let starter_projects = []
 let projects = []
 let current_index = 0
 let search_timer = null
@@ -256,7 +259,6 @@ function handle_vote(type){
   save_vote(project, type)
   show_feedback(type)
   set_card(project)
-  open_modal()
   animate_swipe(type === "fren" ? "right" : "left")
 }
 
@@ -380,7 +382,6 @@ function bind_events(){
 
   if (el_tap_zone){
     el_tap_zone.addEventListener("click", () => {
-      open_modal()
     })
   }
 
