@@ -334,6 +334,11 @@ function handle_vote(type){
   const project = get_current_project()
   if (!project) return
 
+  if (project.is_system_card){
+    animate_swipe(type === "fren" ? "right" : "left")
+    return
+  }
+
   if (!has_guest_swipes_remaining()){
     alert("You’ve used all guest swipes for today. Create an account to unlock more.")
     return
