@@ -11,5 +11,19 @@
     "badge_image": "images/badge-gold.png",
     "is_featured": true,
     "promo_rank": 1
-  }
+  },
+  {
+  "name": "Discovery Mode",
+  "ticker": "",
+  "project_id": "system_discovery_mode",
+  "pair_address": "system_discovery_mode",
+  "image_url": "images/discovery-mode-card.png",
+  "chart_url": "#",
+  "badge_label": "gold",
+  "badge_image": "images/badge-gold.png",
+  "is_featured": true,
+  "promo_rank": 999,
+  "is_system_card": true,
+  "system_card_type": "discovery_transition"
+}
 ]
