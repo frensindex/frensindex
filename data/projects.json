@@ -2,10 +2,14 @@
   {
     "name": "White Whale",
     "ticker": "WHITEWHALE",
+    "chain_id": "solana",
+    "pair_address": "4qxSqMh6iEdbdvtMp8r5MK2psAGKNk57PfGeVo2VhczQ",
+    "project_id": "4qxSqMh6iEdbdvtMp8r5MK2psAGKNk57PfGeVo2VhczQ",
     "image_url": "images/whitewhale-card.png",
     "chart_url": "https://dexscreener.com/solana/4qxSqMh6iEdbdvtMp8r5MK2psAGKNk57PfGeVo2VhczQ",
-    "pack_score": 82,
     "badge_label": "gold",
-    "badge_image": "images/badge-gold.png"
+    "badge_image": "images/badge-gold.png",
+    "is_featured": true,
+    "promo_rank": 1
   }
 ]
