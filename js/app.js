@@ -1,7 +1,9 @@
 const supabaseUrl = "https://gkqskrhxrfvexxrzcfan.supabase.co"
 const supabaseKey = "sb_publishable_ZJjq7WefqtMN7bLEF6Yffw_kmYpjC6V"
 
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey)let starter_projects = []
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+let starter_projects = []
 let projects = []
 let current_index = 0
 let search_timer = null
