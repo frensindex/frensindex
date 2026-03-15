@@ -7,7 +7,12 @@ let starter_projects = []
 let projects = []
 let current_index = 0
 let search_timer = null
+let seen_pair_addresses = new Set()
+let discovery_loading = false
 
+const DISCOVERY_BATCH_SIZE = 24
+const MIN_MARKET_CAP = 30000
+const MAX_AGE_DAYS = 7
 const el_name = document.getElementById("card_name")
 const el_ticker = document.getElementById("card_ticker")
 const el_score = document.getElementById("card_score")
@@ -212,7 +217,7 @@ function show_current(){
   set_card(filtered[current_index])
 }
 
-function next_card(){
+async function next_card(){
   const filtered = get_filtered_projects()
 
   if (!filtered.length){
@@ -221,10 +226,33 @@ function next_card(){
   }
 
   current_index += 1
-  if (current_index >= filtered.length) current_index = 0
-  set_card(filtered[current_index])
-}
 
+  if (current_index >= filtered.length){
+    const q = (search_input.value || "").trim()
+
+    if (!q){
+      await ensure_discovery_buffer()
+    }
+  }
+
+  const updated_filtered = get_filtered_projects()
+
+  if (!updated_filtered.length){
+    set_card(null)
+    return
+  }
+
+  if (current_index >= updated_filtered.length){
+    current_index = 0
+  }
+
+  set_card(updated_filtered[current_index])
+
+  if (!(search_input.value || "").trim()){
+    ensure_discovery_buffer()
+  }
+}
+  
 function get_current_project(){
   const filtered = get_filtered_projects()
   if (!filtered.length) return null
@@ -246,11 +274,11 @@ function animate_swipe(direction){
 
   card.style.opacity = "0.25"
 
-  setTimeout(() => {
+  setTimeout(async () => {
     card.style.transition = "none"
     card.style.transform = "translateX(0) rotate(0deg)"
     card.style.opacity = "1"
-    next_card()
+    await next_card()
   }, 260)
 }
 
@@ -268,10 +296,23 @@ async function load_starter_projects(){
   try{
     const res = await fetch("data/projects.json", { cache: "no-store" })
     starter_projects = await res.json()
-    projects = starter_projects.slice()
+
+    starter_projects.forEach(project => {
+      if (project.pair_address){
+        seen_pair_addresses.add(project.pair_address)
+      }
+    })
+
+    const featured_sorted = [...starter_projects].sort((a, b) => {
+      return Number(a.promo_rank || 999) - Number(b.promo_rank || 999)
+    })
+
+    projects = featured_sorted
     current_index = 0
     set_search_status("Search any token to load it into the index.")
     show_current()
+
+   await ensure_discovery_buffer()
   } catch {
     starter_projects = []
     projects = []
@@ -283,6 +324,7 @@ async function load_starter_projects(){
 function map_pair_to_project(pair){
   const image_url =
     pair.info?.imageUrl ||
+    pair.info?.header ||
     pair.info?.openGraph ||
     pair.baseToken?.icon ||
     get_fallback_image(pair.baseToken?.name || "Token")
@@ -290,6 +332,7 @@ function map_pair_to_project(pair){
   return {
     project_id: pair.pairAddress,
     pair_address: pair.pairAddress,
+    chain_id: pair.chainId || "solana",
     token_address: pair.baseToken?.address || "",
     name: pair.baseToken?.name || "Unknown Token",
     ticker: pair.baseToken?.symbol || "",
@@ -298,10 +341,104 @@ function map_pair_to_project(pair){
     badge_label: "silver",
     badge_image: "images/badge-silver.png",
     fren_votes: 0,
-    rug_votes: 0
+    rug_votes: 0,
+    market_cap: Number(pair.marketCap || pair.fdv || 0),
+    pair_created_at: Number(pair.pairCreatedAt || 0)
   }
 }
+function shuffle_array(arr){
+  const copy = [...arr]
 
+  for (let i = copy.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1))
+    const temp = copy[i]
+    copy[i] = copy[j]
+    copy[j] = temp
+  }
+
+  return copy
+}
+
+function is_recent_pair(pair_created_at){
+  if (!pair_created_at) return false
+
+  const age_ms = Date.now() - Number(pair_created_at)
+  const max_age_ms = MAX_AGE_DAYS * 24 * 60 * 60 * 1000
+
+  return age_ms <= max_age_ms
+}
+
+function qualifies_for_discovery(pair){
+  const market_cap = Number(pair.marketCap || pair.fdv || 0)
+  const recent = is_recent_pair(pair.pairCreatedAt)
+
+  return market_cap >= MIN_MARKET_CAP || recent
+}
+async function fetch_discovery_projects(){
+  if (discovery_loading) return []
+
+  discovery_loading = true
+
+  try{
+    const profiles_res = await fetch("https://api.dexscreener.com/token-profiles/latest/v1")
+    const profiles_data = await profiles_res.json()
+
+    const solana_profiles = Array.isArray(profiles_data)
+      ? profiles_data.filter(item => String(item.chainId || "").toLowerCase() === "solana")
+      : []
+
+    const token_addresses = solana_profiles
+      .map(item => item.tokenAddress)
+      .filter(Boolean)
+
+    if (!token_addresses.length) return []
+
+    const shuffled_addresses = shuffle_array(token_addresses).slice(0, 30)
+
+    const tokens_url = `https://api.dexscreener.com/tokens/v1/solana/${shuffled_addresses.join(",")}`
+    const pairs_res = await fetch(tokens_url)
+    const pairs_data = await pairs_res.json()
+
+    const pairs = Array.isArray(pairs_data) ? pairs_data : []
+
+    const filtered_pairs = pairs.filter(pair => {
+      const chain_ok = String(pair.chainId || "").toLowerCase() === "solana"
+      const not_seen = !seen_pair_addresses.has(pair.pairAddress)
+      return chain_ok && not_seen && qualifies_for_discovery(pair)
+    })
+
+    const shuffled_pairs = shuffle_array(filtered_pairs)
+
+    const mapped = shuffled_pairs.slice(0, DISCOVERY_BATCH_SIZE).map(map_pair_to_project)
+
+    mapped.forEach(project => {
+      if (project.pair_address){
+        seen_pair_addresses.add(project.pair_address)
+      }
+    })
+
+    return mapped
+  } catch (err){
+    console.error("discovery fetch failed", err)
+    return []
+  } finally {
+    discovery_loading = false
+  }
+}
+async function ensure_discovery_buffer(){
+  const q = (search_input.value || "").trim()
+  if (q) return
+
+  const remaining = projects.length - current_index - 1
+
+  if (remaining > 5) return
+
+  const discovery_projects = await fetch_discovery_projects()
+
+  if (discovery_projects.length){
+    projects = [...projects, ...discovery_projects]
+  }
+}
 function looks_like_solana_address(value){
   const trimmed = String(value || "").trim()
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(trimmed)
