@@ -27,6 +27,7 @@ const el_feedback = document.getElementById("swipe_feedback")
 
 const btn_fren = document.getElementById("btn_fren")
 const btn_rug = document.getElementById("btn_rug")
+const btn_skip = document.getElementById("btn_skip")
 
 const modal = document.getElementById("gate_modal")
 const search_input = document.getElementById("search_input")
@@ -169,6 +170,49 @@ function save_vote(project, type){
 
   set_store(store)
   return true
+}
+function save_skip(project){
+  if (!has_guest_swipes_remaining() || has_voted_today(project)){
+    return false
+  }
+
+  const store = get_store()
+  const key = get_project_key(project)
+  const current = get_vote_counts(project)
+
+  store[key] = {
+    fren_votes: current.fren_votes,
+    rug_votes: current.rug_votes,
+    last_vote_type: "skip",
+    last_voted_at: get_now()
+  }
+
+  set_store(store)
+  return true
+}
+
+function handle_skip(){
+  const project = get_current_project()
+  if (!project) return
+
+  if (project.is_system_card){
+    animate_swipe("left")
+    return
+  }
+
+  if (!has_guest_swipes_remaining()){
+    alert("You’ve used all guest swipes for today. Create an account to unlock more.")
+    return
+  }
+
+  const saved = save_skip(project)
+
+  if (!saved){
+    alert("You already acted on this project today.")
+    return
+  }
+
+  animate_swipe("left")
 }
 function calculate_pack_score(fren_votes, rug_votes){
   const total = fren_votes + rug_votes
@@ -593,12 +637,18 @@ const io = new IntersectionObserver((entries) => {
 sections.forEach(section => io.observe(section))
 function bind_events(){
   btn_fren.addEventListener("click", () => {
-    handle_vote("fren")
-  })
+  handle_vote("fren")
+})
 
-  btn_rug.addEventListener("click", () => {
-    handle_vote("rug")
+btn_rug.addEventListener("click", () => {
+  handle_vote("rug")
+})
+
+if (btn_skip){
+  btn_skip.addEventListener("click", () => {
+    handle_skip()
   })
+}
 
   if (el_tap_zone){
     el_tap_zone.addEventListener("click", () => {
@@ -651,14 +701,17 @@ function bind_events(){
   }
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") close_modal()
-    if (e.key === "ArrowRight"){
-      handle_vote("fren")
-    }
-    if (e.key === "ArrowLeft"){
-      handle_vote("rug")
-    }
-  })
+  if (e.key === "Escape") close_modal()
+  if (e.key === "ArrowRight"){
+    handle_vote("fren")
+  }
+  if (e.key === "ArrowLeft"){
+    handle_vote("rug")
+  }
+  if (e.key === "ArrowDown"){
+    handle_skip()
+  }
+})
 }
 bind_modal_close()
 bind_events()
