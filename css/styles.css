@@ -441,8 +441,10 @@ color:#27445D;
   color:#1F3A4D;
   font-weight:900;
   font-size:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-
 .card_tap_zone{
   position:absolute;
   inset:0;
@@ -570,7 +572,12 @@ color:#27445D;
 .swipe_card.system_card .swipe_ticker{
   text-align:center;
 }
-
+.swipe_card.system_card{
+  box-shadow:
+    0 24px 70px rgba(0,0,0,0.12),
+    0 0 0 2px rgba(111,211,167,0.15),
+    0 0 40px rgba(111,211,167,0.12);
+}
 .swipe_card.system_card::before{
   background:
     linear-gradient(
