@@ -9,6 +9,7 @@ let current_index = 0
 let search_timer = null
 let seen_pair_addresses = new Set()
 let discovery_loading = false
+let discovery_transition_inserted = false
 
 const DISCOVERY_BATCH_SIZE = 24
 const MIN_MARKET_CAP = 30000
@@ -251,8 +252,26 @@ function show_feedback(type){
     el_feedback.classList.remove("is_fren", "is_rug")
   }, 180)
 }
-
+function create_discovery_mode_card(){
+  return {
+    project_id: "system_discovery_mode",
+    name: "Discovery Mode",
+    ticker: "",
+    image_url: "images/discovery-mode-card.png",
+    is_system_card: true
+  }
+}
 function set_card(project){
+  const card = document.getElementById("project_card")
+
+  if (card){
+    card.classList.remove("system_card")
+  }
+
+  el_chart.style.display = ""
+  el_badge_img.style.display = ""
+  el_ticker.style.display = ""
+
   if (!project){
     el_name.textContent = "No projects found"
     el_ticker.textContent = ""
@@ -263,6 +282,30 @@ function set_card(project){
     el_image.src = get_fallback_image("No Project")
     el_image.alt = "No project found"
     apply_badge_glow("gold")
+    return
+  }
+
+  if (project.is_system_card){
+    if (card){
+      card.classList.add("system_card")
+    }
+
+    el_name.textContent = project.name || ""
+    el_ticker.textContent = project.ticker || ""
+    el_score.textContent = ""
+    el_chart.href = "#"
+    el_badge_img.src = ""
+    el_badge_img.alt = ""
+    el_image.src = project.image_url || get_fallback_image(project.name || "System Card")
+    el_image.alt = project.name || "System card"
+
+    el_chart.style.display = "none"
+    el_badge_img.style.display = "none"
+
+    if (!project.ticker){
+      el_ticker.style.display = "none"
+    }
+
     return
   }
 
@@ -284,7 +327,6 @@ function set_card(project){
 
   apply_badge_glow(project.badge_label || "gold")
 }
-
 function get_filtered_projects(){
   const q = (search_input.value || "").trim().toLowerCase()
   if (!q) return projects
@@ -403,6 +445,7 @@ async function load_starter_projects(){
   try{
     const res = await fetch("data/projects.json", { cache: "no-store" })
     starter_projects = await res.json()
+    discovery_transition_inserted = false
 
     starter_projects.forEach(project => {
       if (project.pair_address){
@@ -575,7 +618,12 @@ async function ensure_discovery_buffer(){
 
   const discovery_projects = await fetch_discovery_projects()
 
-  if (discovery_projects.length){
+  if (!discovery_projects.length) return
+
+  if (!discovery_transition_inserted){
+    projects = [...projects, create_discovery_mode_card(), ...discovery_projects]
+    discovery_transition_inserted = true
+  } else {
     projects = [...projects, ...discovery_projects]
   }
 }
@@ -606,27 +654,28 @@ async function search_live_tokens(query){
   const trimmed = (query || "").trim()
 
   if (!trimmed){
-  projects = [...starter_projects]
-    .filter(project => !has_voted_today(project))
-    .sort((a, b) => {
-      return Number(a.promo_rank || 999) - Number(b.promo_rank || 999)
-    })
+    projects = [...starter_projects]
+      .filter(project => !has_voted_today(project))
+      .sort((a, b) => {
+        return Number(a.promo_rank || 999) - Number(b.promo_rank || 999)
+      })
 
-  current_index = 0
-  set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+    discovery_transition_inserted = false
+    current_index = 0
+    set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
 
-  if (!projects.length){
-    await ensure_discovery_buffer()
+    if (!projects.length){
+      await ensure_discovery_buffer()
+    }
+
+    show_current()
+
+    if (projects.length){
+      ensure_discovery_buffer()
+    }
+
+    return
   }
-
-  show_current()
-
-  if (projects.length){
-    ensure_discovery_buffer()
-  }
-
-  return
-}
 
   set_loading(true)
   set_search_status(`Searching for "${trimmed}"...`)
@@ -656,7 +705,6 @@ async function search_live_tokens(query){
     set_loading(false)
   }
 }
-
 const sections = document.querySelectorAll(".section")
 const io = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
