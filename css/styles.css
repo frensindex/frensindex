@@ -537,7 +537,49 @@ color:#27445D;
 .card_ticker{color:rgba(11,18,32,0.62);font-size:13px;margin-top:2px}
 
 .card_desc{margin:14px 0 14px;color:rgba(11,18,32,0.78);line-height:1.5;min-height:46px}
+.swipe_card.system_card .swipe_badge{
+  display:none;
+}
 
+.swipe_card.system_card .swipe_chart_btn{
+  display:none;
+}
+
+.swipe_card.system_card .swipe_score{
+  display:none;
+}
+
+.swipe_card.system_card .swipe_bottom_row{
+  justify-content:center;
+  margin-bottom:8px;
+}
+
+.swipe_card.system_card .swipe_overlay_top{
+  background:none;
+}
+
+.swipe_card.system_card .swipe_project_meta{
+  max-width:100%;
+}
+
+.swipe_card.system_card .swipe_name{
+  text-align:center;
+  width:100%;
+}
+
+.swipe_card.system_card .swipe_ticker{
+  text-align:center;
+}
+
+.swipe_card.system_card::before{
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(12,28,44,0.10) 0%,
+      rgba(12,28,44,0.02) 35%,
+      rgba(12,28,44,0.10) 100%
+    );
+}
 .metric{
   flex:1;
   min-width:140px;
