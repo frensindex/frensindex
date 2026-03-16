@@ -1005,10 +1005,25 @@ body{
   100%{ transform:translateY(0px); }
 
 }
-.section_text a,
-.muted a{
-  font-weight:700;
-  text-decoration:underline;
+
+.article_cta{
+  margin-top:14px;
+}
+
+.article_cta a{
+  display:inline-block;
+  padding:10px 16px;
+  border-radius:999px;
+  background:#F6D36B;
+  color:#1F3A4D;
+  font-weight:900;
+  text-decoration:none;
+  box-shadow:0 8px 18px rgba(0,0,0,0.08);
+}
+
+.article_cta a:hover{
+  transform:translateY(-1px);
+  box-shadow:0 10px 22px rgba(0,0,0,0.12);
 }
 .card_loading{
 height:200px;
