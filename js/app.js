@@ -171,6 +171,25 @@ function save_vote(project, type){
   set_store(store)
   return true
 }
+
+async function submit_vote_to_db(project, type){
+  try{
+    const { error } = await supabaseClient
+      .from("votes")
+      .insert({
+        project_id: project.project_id || project.pair_address || project.token_address || project.name,
+        pair_address: project.pair_address || null,
+        token_address: project.token_address || null,
+        vote_type: type
+      })
+
+    if (error){
+      console.error("vote insert failed", error)
+    }
+  } catch(err){
+    console.error("vote insert failed", err)
+  }
+}
 function save_skip(project){
   if (!has_guest_swipes_remaining() || has_voted_today(project)){
     return false
@@ -407,7 +426,7 @@ function animate_swipe(direction){
   }, 260)
 }
 
-function handle_vote(type){
+async function handle_vote(type){
   const project = get_current_project()
   if (!project) return
 
@@ -427,7 +446,8 @@ function handle_vote(type){
     alert("You already voted on this project today.")
     return
   }
-
+await submit_vote_to_db(project, type)
+  
   show_feedback(type)
   set_card(project)
   animate_swipe(type === "fren" ? "right" : "left")
