@@ -411,17 +411,24 @@ async function load_starter_projects(){
     })
 
     const featured_sorted = [...starter_projects]
-  .filter(project => !has_voted_today(project))
-  .sort((a, b) => {
-    return Number(a.promo_rank || 999) - Number(b.promo_rank || 999)
-  })
+      .filter(project => !has_voted_today(project))
+      .sort((a, b) => {
+        return Number(a.promo_rank || 999) - Number(b.promo_rank || 999)
+      })
 
-projects = featured_sorted
+    projects = featured_sorted
     current_index = 0
-    set_search_status("Search any token to load it into the index.")
+    set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+
+    if (!projects.length){
+      await ensure_discovery_buffer()
+    }
+
     show_current()
 
-   await ensure_discovery_buffer()
+    if (projects.length){
+      ensure_discovery_buffer()
+    }
   } catch {
     starter_projects = []
     projects = []
@@ -478,10 +485,24 @@ function is_recent_pair(pair_created_at){
 }
 
 function qualifies_for_discovery(pair){
+
   const market_cap = Number(pair.marketCap || pair.fdv || 0)
   const recent = is_recent_pair(pair.pairCreatedAt)
 
-  return market_cap >= MIN_MARKET_CAP || recent
+  const liquidity = Number(pair.liquidity?.usd || 0)
+  const volume_24h = Number(pair.volume?.h24 || 0)
+  const price_change = Number(pair.priceChange?.h24 || 0)
+
+  const liquidity_ok = liquidity >= 10000
+  const volume_ok = volume_24h >= 5000
+  const price_ok = price_change > -80
+
+  return (
+    (market_cap >= MIN_MARKET_CAP || recent)
+    && liquidity_ok
+    && volume_ok
+    && price_ok
+  )
 }
 async function fetch_discovery_projects(){
   if (discovery_loading) return []
@@ -593,8 +614,17 @@ async function search_live_tokens(query){
 
   current_index = 0
   set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+
+  if (!projects.length){
+    await ensure_discovery_buffer()
+  }
+
   show_current()
-  await ensure_discovery_buffer()
+
+  if (projects.length){
+    ensure_discovery_buffer()
+  }
+
   return
 }
 
