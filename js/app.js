@@ -88,7 +88,16 @@ function set_store(store){
 function get_now(){
   return Date.now()
 }
+async function get_logged_in_user(){
+  try{
+    const { data, error } = await supabaseClient.auth.getUser()
 
+    if (error) return null
+    return data?.user || null
+  } catch {
+    return null
+  }
+}
 function is_same_day_vote(timestamp){
   if (!timestamp) return false
   return (get_now() - Number(timestamp)) < ONE_DAY_MS
@@ -210,7 +219,7 @@ function save_skip(project){
   return true
 }
 
-function handle_skip(){
+async function handle_skip(){
   const project = get_current_project()
   if (!project) return
 
@@ -219,16 +228,26 @@ function handle_skip(){
     return
   }
 
-  if (!has_guest_swipes_remaining()){
+  const user = await get_logged_in_user()
+  const is_logged_in = !!user
+
+  if (!is_logged_in && !has_guest_swipes_remaining()){
     alert("You’ve used all guest swipes for today. Create an account to unlock more.")
     return
   }
 
-  const saved = save_skip(project)
-
-  if (!saved){
+  if (!is_logged_in && has_voted_today(project)){
     alert("You already acted on this project today.")
     return
+  }
+
+  if (!is_logged_in){
+    const saved = save_skip(project)
+
+    if (!saved){
+      alert("You already acted on this project today.")
+      return
+    }
   }
 
   animate_swipe("left")
@@ -435,19 +454,30 @@ async function handle_vote(type){
     return
   }
 
-  if (!has_guest_swipes_remaining()){
+  const user = await get_logged_in_user()
+  const is_logged_in = !!user
+
+  if (!is_logged_in && !has_guest_swipes_remaining()){
     alert("You’ve used all guest swipes for today. Create an account to unlock more.")
     return
   }
 
-  const saved = save_vote(project, type)
-
-  if (!saved){
+  if (!is_logged_in && has_voted_today(project)){
     alert("You already voted on this project today.")
     return
   }
-await submit_vote_to_db(project, type)
-  
+
+  if (!is_logged_in){
+    const saved = save_vote(project, type)
+
+    if (!saved){
+      alert("You already voted on this project today.")
+      return
+    }
+  }
+
+  await submit_vote_to_db(project, type)
+
   show_feedback(type)
   set_card(project)
   animate_swipe(type === "fren" ? "right" : "left")
@@ -718,6 +748,55 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: 0.12 })
 
 sections.forEach(section => io.observe(section))
+
+async function sign_in_with_x(){
+  try{
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: "twitter",
+      options: {
+        redirectTo: "https://frensindex.github.io"
+      }
+    })
+
+    if (error){
+      console.error("x sign in failed", error)
+      alert("X sign in failed. Please try again.")
+      return
+    }
+
+    close_modal()
+  } catch(err){
+    console.error("x sign in failed", err)
+    alert("X sign in failed. Please try again.")
+  }
+}
+
+async function check_auth_session(){
+  try{
+    const { data, error } = await supabaseClient.auth.getUser()
+
+    if (error){
+      console.error("auth check failed", error)
+      return
+    }
+
+    const user = data?.user
+
+    if (user){
+      const username =
+        user.user_metadata?.preferred_username ||
+        user.user_metadata?.user_name ||
+        user.user_metadata?.name ||
+        "user"
+
+      set_search_status(`Signed in as @${username}`)
+      console.log("logged in user", user)
+    }
+  } catch(err){
+    console.error("auth check failed", err)
+  }
+}
+
 function bind_events(){
   btn_fren.addEventListener("click", () => {
   handle_vote("fren")
@@ -737,15 +816,13 @@ if (btn_skip){
     el_tap_zone.addEventListener("click", () => {
     })
   }
-
-  const btn_create = document.getElementById("btn_create_account")
-  if (btn_create){
-    btn_create.addEventListener("click", () => {
-      close_modal()
-      alert("phase 3 will add accounts. for now you can browse freely.")
-    })
-  }
-
+  
+const btn_create = document.getElementById("btn_create_account")
+if (btn_create){
+  btn_create.addEventListener("click", async () => {
+    await sign_in_with_x()
+  })
+}
   const close_targets = document.querySelectorAll('[data_close="true"]')
   close_targets.forEach(el => {
     el.addEventListener("click", () => {
@@ -799,3 +876,4 @@ if (btn_skip){
 bind_modal_close()
 bind_events()
 load_starter_projects()
+check_auth_session()
