@@ -189,11 +189,13 @@ async function submit_vote_to_db(project, type){
     const { error } = await supabaseClient
       .from("votes")
       .insert({
-        project_id: project.project_id || project.pair_address || project.token_address || project.name,
-        pair_address: project.pair_address || null,
-        token_address: project.token_address || null,
-        vote_type: type
-      })
+  project_id: project.project_id || project.pair_address || project.token_address || project.name,
+  pair_address: project.pair_address || null,
+  token_address: project.token_address || null,
+  project_name: project.name || null,
+  project_ticker: project.ticker || null,
+  vote_type: type
+})
 
     if (error){
       console.error("vote insert failed", error)
@@ -896,7 +898,7 @@ async function load_leaderboard(){
   try{
     const { data, error } = await supabaseClient
       .from("votes")
-      .select("project_id, vote_type")
+      .select("project_id, project_name, project_ticker, vote_type")
 
     console.log("leaderboard data", data)
     console.log("leaderboard error", error)
@@ -910,22 +912,32 @@ async function load_leaderboard(){
     const projectMap = new Map()
 
     for (const row of data || []){
-      const projectId = row.project_id
-      if (!projectId) continue
+  const projectId = row.project_id
+  if (!projectId) continue
 
-      if (!projectMap.has(projectId)){
-        projectMap.set(projectId, {
-          project_id: projectId,
-          fren: 0,
-          rug: 0
-        })
-      }
+  if (!projectMap.has(projectId)){
+    projectMap.set(projectId, {
+      project_id: projectId,
+      project_name: row.project_name || null,
+      project_ticker: row.project_ticker || null,
+      fren: 0,
+      rug: 0
+    })
+  }
 
-      const entry = projectMap.get(projectId)
+  const entry = projectMap.get(projectId)
 
-      if (row.vote_type === "fren") entry.fren += 1
-      if (row.vote_type === "rug") entry.rug += 1
-    }
+  if (!entry.project_name && row.project_name){
+    entry.project_name = row.project_name
+  }
+
+  if (!entry.project_ticker && row.project_ticker){
+    entry.project_ticker = row.project_ticker
+  }
+
+  if (row.vote_type === "fren") entry.fren += 1
+  if (row.vote_type === "rug") entry.rug += 1
+}
 
     const ranked = Array.from(projectMap.values())
       .map(entry => {
@@ -950,7 +962,7 @@ async function load_leaderboard(){
       return `
         <div class="leaderboard_row">
           <div class="leaderboard_rank">#${index + 1}</div>
-          <div class="leaderboard_name">${format_project_label(entry.project_id)}</div>
+          <div class="leaderboard_name">${format_project_label(entry)}</div>
           <div class="leaderboard_votes">${entry.total} votes</div>
           <div class="leaderboard_score">${entry.score} score</div>
         </div>
@@ -962,12 +974,21 @@ async function load_leaderboard(){
   }
 }
 
-function format_project_label(projectId){
-  if (!projectId) return "Unknown"
+function format_project_label(entry){
+  if (entry.project_ticker){
+    return `$${entry.project_ticker}`
+  }
 
-  if (String(projectId).startsWith("$")) return projectId
+  if (entry.project_name){
+    return entry.project_name
+  }
 
-  return String(projectId)
+  const raw = String(entry.project_id || "")
+  if (raw.length > 14){
+    return `${raw.slice(0, 6)}...${raw.slice(-4)}`
+  }
+
+  return raw || "Unknown"
 }
 function bind_events(){
   if (btn_fren){
