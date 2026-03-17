@@ -781,7 +781,7 @@ async function sign_in_with_x(){
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: "twitter",
       options: {
-        redirectTo: window.location.origin + window.location.pathname
+        redirectTo: "https://frensindex.github.io/frensindex"
       }
     })
 
