@@ -735,6 +735,45 @@ async function fetch_pairs_from_dexscreener(query){
   const data = await res.json()
   return Array.isArray(data.pairs) ? data.pairs : []
 }
+function pick_best_pair_per_token(pairs){
+  const bestByToken = new Map()
+
+  for (const pair of pairs || []){
+    const tokenAddress = pair.baseToken?.address
+    if (!tokenAddress) continue
+
+    const currentLiquidity = Number(pair.liquidity?.usd || 0)
+    const currentVolume = Number(pair.volume?.h24 || 0)
+    const currentMarketCap = Number(pair.marketCap || pair.fdv || 0)
+
+    const currentScore =
+      (currentLiquidity * 1000000) +
+      (currentVolume * 1000) +
+      currentMarketCap
+
+    const existing = bestByToken.get(tokenAddress)
+
+    if (!existing){
+      bestByToken.set(tokenAddress, pair)
+      continue
+    }
+
+    const existingLiquidity = Number(existing.liquidity?.usd || 0)
+    const existingVolume = Number(existing.volume?.h24 || 0)
+    const existingMarketCap = Number(existing.marketCap || existing.fdv || 0)
+
+    const existingScore =
+      (existingLiquidity * 1000000) +
+      (existingVolume * 1000) +
+      existingMarketCap
+
+    if (currentScore > existingScore){
+      bestByToken.set(tokenAddress, pair)
+    }
+  }
+
+  return Array.from(bestByToken.values())
+}
 
 async function search_live_tokens(query){
   const trimmed = (query || "").trim()
@@ -781,10 +820,12 @@ if (current_user){
     const pairs = await fetch_pairs_from_dexscreener(trimmed)
 
     const solana_pairs = pairs.filter(pair => {
-      return String(pair.chainId || "").toLowerCase() === "solana"
-    })
+  return String(pair.chainId || "").toLowerCase() === "solana"
+})
 
-    projects = solana_pairs.slice(0, 20).map(map_pair_to_project)
+const unique_best_pairs = pick_best_pair_per_token(solana_pairs)
+
+projects = unique_best_pairs.slice(0, 20).map(map_pair_to_project)
     current_index = 0
 
     if (!projects.length){
