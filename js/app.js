@@ -15,7 +15,6 @@ const MIN_MARKET_CAP = 30000
 const MAX_AGE_DAYS = 7
 const DAILY_SWIPE_LIMIT_GUEST = 8
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
-
 const el_name = document.getElementById("card_name")
 const el_ticker = document.getElementById("card_ticker")
 const el_score = document.getElementById("card_score")
@@ -36,12 +35,6 @@ const search_input = document.getElementById("search_input")
 const swipe_stage = document.querySelector(".swipe_stage")
 const badge_wrap = document.querySelector(".swipe_badge")
 
-const account_dock = document.getElementById("account_dock")
-const account_avatar = document.getElementById("account_avatar")
-const account_username = document.getElementById("account_username")
-const account_stats = document.getElementById("account_stats")
-const btn_sign_out = document.getElementById("btn_sign_out")
-
 const VOTE_STORE_KEY = "frens_vote_store_v2"
 
 function open_modal(){
@@ -53,7 +46,6 @@ function close_modal(){
   if (!modal) return
   modal.classList.add("hidden")
 }
-
 function bind_modal_close(){
   if (!modal) return
 
@@ -68,10 +60,6 @@ function bind_modal_close(){
 function get_fallback_image(name = "FRENS"){
   const label = encodeURIComponent(name)
   return `https://placehold.co/900x1200/EAF6FF/1F3A4D?text=${label}`
-}
-
-function get_fallback_avatar(){
-  return "https://placehold.co/80x80/EAF6FF/1F3A4D?text=U"
 }
 
 function set_search_status(text){
@@ -100,11 +88,9 @@ function get_store(){
 function set_store(store){
   localStorage.setItem(VOTE_STORE_KEY, JSON.stringify(store))
 }
-
 function get_now(){
   return Date.now()
 }
-
 async function get_logged_in_user(){
   try{
     const { data, error } = await supabaseClient.auth.getUser()
@@ -115,7 +101,6 @@ async function get_logged_in_user(){
     return null
   }
 }
-
 function is_same_day_vote(timestamp){
   if (!timestamp) return false
   return (get_now() - Number(timestamp)) < ONE_DAY_MS
@@ -147,7 +132,6 @@ function has_guest_swipes_remaining(){
 function can_vote_today(project){
   return !has_voted_today(project) && has_guest_swipes_remaining()
 }
-
 function get_project_key(project){
   return (
     project.project_id ||
@@ -218,7 +202,6 @@ async function submit_vote_to_db(project, type){
     console.error("vote insert failed", err)
   }
 }
-
 function save_skip(project){
   if (!has_guest_swipes_remaining() || has_voted_today(project)){
     return false
@@ -237,70 +220,6 @@ function save_skip(project){
 
   set_store(store)
   return true
-}
-
-function get_display_username(user){
-  return (
-    user?.user_metadata?.preferred_username ||
-    user?.user_metadata?.user_name ||
-    user?.user_metadata?.name ||
-    "user"
-  )
-}
-
-function get_display_avatar(user){
-  return (
-    user?.user_metadata?.avatar_url ||
-    user?.user_metadata?.picture ||
-    get_fallback_avatar()
-  )
-}
-
-function update_auth_ui(user){
-  const btn_create = document.getElementById("btn_create_account")
-
-  if (user){
-    const username = get_display_username(user)
-    const avatar = get_display_avatar(user)
-
-    if (btn_create){
-      btn_create.textContent = "Signed in with X"
-      btn_create.disabled = true
-      btn_create.style.opacity = "0.08"
-      btn_create.style.pointerEvents = "none"
-    }
-
-    if (account_dock){
-      account_dock.classList.remove("is_hidden")
-    }
-
-    if (account_avatar){
-      account_avatar.src = avatar
-    }
-
-    if (account_username){
-      account_username.textContent = `@${String(username).replace(/^@/, "")}`
-    }
-
-    if (account_stats){
-      account_stats.textContent = "0 votes • Gold • Rep 0"
-    }
-
-    set_search_status(`Signed in as @${String(username).replace(/^@/, "")}`)
-  } else {
-    if (btn_create){
-      btn_create.textContent = "Create Account / Sign in with X"
-      btn_create.disabled = false
-      btn_create.style.opacity = ""
-      btn_create.style.pointerEvents = ""
-    }
-
-    if (account_dock){
-      account_dock.classList.add("is_hidden")
-    }
-
-    set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
-  }
 }
 
 async function handle_skip(){
@@ -336,7 +255,6 @@ async function handle_skip(){
 
   animate_swipe("left")
 }
-
 function calculate_pack_score(fren_votes, rug_votes){
   const total = fren_votes + rug_votes
   if (total <= 0) return 0
@@ -382,23 +300,19 @@ function set_card(project){
     card.classList.remove("system_card")
   }
 
-  if (el_chart) el_chart.style.display = ""
-  if (el_badge_img) el_badge_img.style.display = ""
-  if (el_ticker) el_ticker.style.display = ""
+  el_chart.style.display = ""
+  el_badge_img.style.display = ""
+  el_ticker.style.display = ""
 
   if (!project){
-    if (el_name) el_name.textContent = "No projects found"
-    if (el_ticker) el_ticker.textContent = ""
-    if (el_score) el_score.textContent = "0"
-    if (el_chart) el_chart.href = "https://dexscreener.com/solana"
-    if (el_badge_img){
-      el_badge_img.src = "images/badge-gold.png"
-      el_badge_img.alt = "project badge"
-    }
-    if (el_image){
-      el_image.src = get_fallback_image("No Project")
-      el_image.alt = "No project found"
-    }
+    el_name.textContent = "No projects found"
+    el_ticker.textContent = ""
+    el_score.textContent = "0"
+    el_chart.href = "https://dexscreener.com/solana"
+    el_badge_img.src = "images/badge-gold.png"
+    el_badge_img.alt = "project badge"
+    el_image.src = get_fallback_image("No Project")
+    el_image.alt = "No project found"
     apply_badge_glow("gold")
     return
   }
@@ -408,25 +322,19 @@ function set_card(project){
       card.classList.add("system_card")
     }
 
-    if (el_name) el_name.textContent = project.name || ""
-    if (el_ticker) el_ticker.textContent = project.ticker || ""
-    if (el_score) el_score.textContent = ""
-    if (el_chart) el_chart.href = "#"
+    el_name.textContent = project.name || ""
+    el_ticker.textContent = project.ticker || ""
+    el_score.textContent = ""
+    el_chart.href = "#"
+    el_badge_img.src = ""
+    el_badge_img.alt = ""
+    el_image.src = project.image_url || get_fallback_image(project.name || "System Card")
+    el_image.alt = project.name || "System card"
 
-    if (el_badge_img){
-      el_badge_img.src = ""
-      el_badge_img.alt = ""
-    }
+    el_chart.style.display = "none"
+    el_badge_img.style.display = "none"
 
-    if (el_image){
-      el_image.src = project.image_url || get_fallback_image(project.name || "System Card")
-      el_image.alt = project.name || "System card"
-    }
-
-    if (el_chart) el_chart.style.display = "none"
-    if (el_badge_img) el_badge_img.style.display = "none"
-
-    if (!project.ticker && el_ticker){
+    if (!project.ticker){
       el_ticker.style.display = "none"
     }
 
@@ -436,30 +344,23 @@ function set_card(project){
   const votes = get_vote_counts(project)
   const pack_score = calculate_pack_score(votes.fren_votes, votes.rug_votes)
 
-  if (el_name) el_name.textContent = project.name || "Untitled"
-  if (el_ticker) el_ticker.textContent = project.ticker ? `$${project.ticker}` : ""
-  if (el_score) el_score.textContent = String(pack_score)
+  el_name.textContent = project.name || "Untitled"
+  el_ticker.textContent = project.ticker ? `$${project.ticker}` : ""
+  el_score.textContent = String(pack_score)
 
-  if (el_badge_img){
-    el_badge_img.src = project.badge_image || "images/badge-gold.png"
-    el_badge_img.alt = project.badge_label ? `${project.badge_label} badge` : "project badge"
-  }
+  el_badge_img.src = project.badge_image || "images/badge-gold.png"
+  el_badge_img.alt = project.badge_label ? `${project.badge_label} badge` : "project badge"
 
-  if (el_chart){
-    el_chart.href = project.chart_url || "https://dexscreener.com/solana"
-  }
+  el_chart.href = project.chart_url || "https://dexscreener.com/solana"
 
   const image_url = project.image_url || project.logo_url || get_fallback_image(project.name || "FRENS")
-  if (el_image){
-    el_image.src = image_url
-    el_image.alt = project.name ? `${project.name} image` : "Project image"
-  }
+  el_image.src = image_url
+  el_image.alt = project.name ? `${project.name} image` : "Project image"
 
   apply_badge_glow(project.badge_label || "gold")
 }
-
 function get_filtered_projects(){
-  const q = (search_input?.value || "").trim().toLowerCase()
+  const q = (search_input.value || "").trim().toLowerCase()
   if (!q) return projects
 
   return projects.filter(project => {
@@ -493,7 +394,7 @@ async function next_card(){
   current_index += 1
 
   if (current_index >= filtered.length){
-    const q = (search_input?.value || "").trim()
+    const q = (search_input.value || "").trim()
 
     if (!q){
       await ensure_discovery_buffer()
@@ -513,11 +414,11 @@ async function next_card(){
 
   set_card(updated_filtered[current_index])
 
-  if (!(search_input?.value || "").trim()){
+  if (!(search_input.value || "").trim()){
     ensure_discovery_buffer()
   }
 }
-
+  
 function get_current_project(){
   const filtered = get_filtered_projects()
   if (!filtered.length) return null
@@ -584,7 +485,6 @@ async function handle_vote(type){
   set_card(project)
   animate_swipe(type === "fren" ? "right" : "left")
 }
-
 async function load_starter_projects(){
   try{
     const res = await fetch("data/projects.json", { cache: "no-store" })
@@ -604,9 +504,19 @@ async function load_starter_projects(){
 
     projects = featured_sorted
     current_index = 0
-
     const current_user = await get_logged_in_user()
-    update_auth_ui(current_user)
+
+if (current_user){
+  const username =
+    current_user.user_metadata?.preferred_username ||
+    current_user.user_metadata?.user_name ||
+    current_user.user_metadata?.name ||
+    "user"
+
+  set_search_status(`Signed in as @${username}`)
+} else {
+  set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+}
 
     if (!projects.length){
       await ensure_discovery_buffer()
@@ -650,7 +560,6 @@ function map_pair_to_project(pair){
     pair_created_at: Number(pair.pairCreatedAt || 0)
   }
 }
-
 function shuffle_array(arr){
   const copy = [...arr]
 
@@ -674,6 +583,7 @@ function is_recent_pair(pair_created_at){
 }
 
 function qualifies_for_discovery(pair){
+
   const market_cap = Number(pair.marketCap || pair.fdv || 0)
   const recent = is_recent_pair(pair.pairCreatedAt)
 
@@ -686,13 +596,12 @@ function qualifies_for_discovery(pair){
   const price_ok = price_change > -80
 
   return (
-    (market_cap >= MIN_MARKET_CAP || recent) &&
-    liquidity_ok &&
-    volume_ok &&
-    price_ok
+    (market_cap >= MIN_MARKET_CAP || recent)
+    && liquidity_ok
+    && volume_ok
+    && price_ok
   )
 }
-
 async function fetch_discovery_projects(){
   if (discovery_loading) return []
 
@@ -721,20 +630,20 @@ async function fetch_discovery_projects(){
     const pairs = Array.isArray(pairs_data) ? pairs_data : []
 
     const filtered_pairs = pairs.filter(pair => {
-      const chain_ok = String(pair.chainId || "").toLowerCase() === "solana"
-      const not_seen = !seen_pair_addresses.has(pair.pairAddress)
+  const chain_ok = String(pair.chainId || "").toLowerCase() === "solana"
+  const not_seen = !seen_pair_addresses.has(pair.pairAddress)
 
-      const project_like = {
-        project_id: pair.pairAddress,
-        pair_address: pair.pairAddress,
-        token_address: pair.baseToken?.address || "",
-        chart_url: pair.url || ""
-      }
+  const project_like = {
+    project_id: pair.pairAddress,
+    pair_address: pair.pairAddress,
+    token_address: pair.baseToken?.address || "",
+    chart_url: pair.url || ""
+  }
 
-      const not_voted_today = !has_voted_today(project_like)
+  const not_voted_today = !has_voted_today(project_like)
 
-      return chain_ok && not_seen && not_voted_today && qualifies_for_discovery(pair)
-    })
+  return chain_ok && not_seen && not_voted_today && qualifies_for_discovery(pair)
+})
 
     const shuffled_pairs = shuffle_array(filtered_pairs)
 
@@ -754,9 +663,8 @@ async function fetch_discovery_projects(){
     discovery_loading = false
   }
 }
-
 async function ensure_discovery_buffer(){
-  const q = (search_input?.value || "").trim()
+  const q = (search_input.value || "").trim()
   if (q) return
 
   const remaining = projects.length - current_index - 1
@@ -804,9 +712,19 @@ async function search_live_tokens(query){
       })
 
     current_index = 0
-
     const current_user = await get_logged_in_user()
-    update_auth_ui(current_user)
+
+if (current_user){
+  const username =
+    current_user.user_metadata?.preferred_username ||
+    current_user.user_metadata?.user_name ||
+    current_user.user_metadata?.name ||
+    "user"
+
+  set_search_status(`Signed in as @${username}`)
+} else {
+  set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+}
 
     if (!projects.length){
       await ensure_discovery_buffer()
@@ -849,7 +767,6 @@ async function search_live_tokens(query){
     set_loading(false)
   }
 }
-
 const sections = document.querySelectorAll(".section")
 const io = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
@@ -862,7 +779,7 @@ sections.forEach(section => io.observe(section))
 async function sign_in_with_x(){
   try{
     const { error } = await supabaseClient.auth.signInWithOAuth({
-      provider: "twitter",
+      provider: "x",
       options: {
         redirectTo: "https://frensindex.github.io/frensindex/"
       }
@@ -879,23 +796,6 @@ async function sign_in_with_x(){
   }
 }
 
-async function sign_out_user(){
-  try{
-    const { error } = await supabaseClient.auth.signOut()
-
-    if (error){
-      console.error("sign out failed", error)
-      alert("Sign out failed. Please try again.")
-      return
-    }
-
-    update_auth_ui(null)
-  } catch(err){
-    console.error("sign out failed", err)
-    alert("Sign out failed. Please try again.")
-  }
-}
-
 async function check_auth_session(){
   try{
     const { data, error } = await supabaseClient.auth.getUser()
@@ -906,7 +806,17 @@ async function check_auth_session(){
     }
 
     const user = data?.user || null
-    update_auth_ui(user)
+
+    if (user){
+      const username =
+        user.user_metadata?.preferred_username ||
+        user.user_metadata?.user_name ||
+        user.user_metadata?.name ||
+        "user"
+
+      set_search_status(`Signed in as @${username}`)
+      console.log("logged in user", user)
+    }
   } catch(err){
     console.error("auth check failed", err)
   }
@@ -940,12 +850,6 @@ function bind_events(){
   if (btn_create){
     btn_create.addEventListener("click", async () => {
       await sign_in_with_x()
-    })
-  }
-
-  if (btn_sign_out){
-    btn_sign_out.addEventListener("click", async () => {
-      await sign_out_user()
     })
   }
 
@@ -1001,15 +905,9 @@ function bind_events(){
     }
   })
 }
-
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   bind_modal_close()
   bind_events()
-  await load_starter_projects()
-  await check_auth_session()
-
-  supabaseClient.auth.onAuthStateChange(async (event, session) => {
-    const user = session?.user || null
-    update_auth_ui(user)
-  })
+  load_starter_projects()
+  check_auth_session()
 })
