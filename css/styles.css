@@ -109,7 +109,21 @@ a{color:inherit;text-decoration:none}
 border:none;
 color:#27445D;
 }
+.auth_btn{
+  background: linear-gradient(135deg, #4AF2A1, #00D4AA);
+  color: #0A1D37;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
 
+.auth_btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,212,170,0.25);
+}
 .hero{
   position:relative;
   overflow:visible;
