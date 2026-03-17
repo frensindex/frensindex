@@ -292,8 +292,39 @@ function show_feedback(type){
     el_feedback.classList.remove("is_fren", "is_rug")
   }, 180)
 }
+async function get_vote_totals(project){
+  try{
+    const project_id =
+      project.project_id ||
+      project.pair_address ||
+      project.token_address ||
+      project.name
 
-function set_card(project){
+    const { data, error } = await supabaseClient
+      .from("votes")
+      .select("vote_type")
+      .eq("project_id", project_id)
+
+    if (error){
+      console.error("failed to fetch votes", error)
+      return { fren: 0, rug: 0 }
+    }
+
+    let fren = 0
+    let rug = 0
+
+    for (const row of data){
+      if (row.vote_type === "fren") fren++
+      if (row.vote_type === "rug") rug++
+    }
+
+    return { fren, rug }
+  } catch(err){
+    console.error("failed to fetch votes", err)
+    return { fren: 0, rug: 0 }
+  }
+}
+async function set_card(project){
   const card = document.getElementById("project_card")
 
   if (card){
@@ -341,8 +372,9 @@ function set_card(project){
     return
   }
 
-  const votes = get_vote_counts(project)
-  const pack_score = calculate_pack_score(votes.fren_votes, votes.rug_votes)
+  const db_votes = await get_vote_totals(project)
+
+const pack_score = calculate_pack_score(db_votes.fren, db_votes.rug)
 
   el_name.textContent = project.name || "Untitled"
   el_ticker.textContent = project.ticker ? `$${project.ticker}` : ""
@@ -371,23 +403,23 @@ function get_filtered_projects(){
   })
 }
 
-function show_current(){
+async function show_current(){
   const filtered = get_filtered_projects()
 
   if (!filtered.length){
-    set_card(null)
+   await set_card(null)
     return
   }
 
   if (current_index >= filtered.length) current_index = 0
-  set_card(filtered[current_index])
+ await set_card(filtered[current_index])
 }
 
 async function next_card(){
   const filtered = get_filtered_projects()
 
   if (!filtered.length){
-    set_card(null)
+   await set_card(null)
     return
   }
 
@@ -404,7 +436,7 @@ async function next_card(){
   const updated_filtered = get_filtered_projects()
 
   if (!updated_filtered.length){
-    set_card(null)
+   await set_card(null)
     return
   }
 
@@ -412,7 +444,7 @@ async function next_card(){
     current_index = 0
   }
 
-  set_card(updated_filtered[current_index])
+ await set_card(updated_filtered[current_index])
 
   if (!(search_input.value || "").trim()){
     ensure_discovery_buffer()
@@ -482,7 +514,7 @@ async function handle_vote(type){
   await submit_vote_to_db(project, type)
 
   show_feedback(type)
-  set_card(project)
+ await set_card(project)
   animate_swipe(type === "fren" ? "right" : "left")
 }
 async function load_starter_projects(){
@@ -522,7 +554,7 @@ if (current_user){
       await ensure_discovery_buffer()
     }
 
-    show_current()
+   await show_current()
 
     if (projects.length){
       ensure_discovery_buffer()
@@ -531,7 +563,7 @@ if (current_user){
     starter_projects = []
     projects = []
     set_search_status("Could not load starter cards.")
-    set_card(null)
+   await set_card(null)
   }
 }
 
@@ -730,7 +762,7 @@ if (current_user){
       await ensure_discovery_buffer()
     }
 
-    show_current()
+    await show_current()
 
     if (projects.length){
       ensure_discovery_buffer()
@@ -754,15 +786,15 @@ if (current_user){
 
     if (!projects.length){
       set_search_status(`No Solana tokens found for "${trimmed}".`)
-      set_card(null)
+     await set_card(null)
     } else {
       set_search_status(`Loaded ${projects.length} token${projects.length === 1 ? "" : "s"} for "${trimmed}".`)
-      show_current()
+     await show_current()
     }
   } catch (err){
     console.error(err)
     set_search_status("Search failed. Please try again.")
-    set_card(null)
+   await set_card(null)
   } finally {
     set_loading(false)
   }
