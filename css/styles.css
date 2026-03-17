@@ -1078,3 +1078,122 @@ background:linear-gradient(
 );
 animation:shimmer 1.2s infinite;
 }
+
+.account_dock{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  width:min(760px, calc(100vw - 24px));
+  z-index:60;
+  transition:opacity 0.2s ease, transform 0.2s ease;
+}
+
+.account_dock.is_hidden{
+  opacity:0;
+  pointer-events:none;
+  transform:translateX(-50%) translateY(16px);
+}
+
+.account_dock_inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:12px 14px;
+  border-radius:22px;
+  background:rgba(255,255,255,0.88);
+  border:1px solid rgba(31,58,77,0.10);
+  box-shadow:0 18px 45px rgba(0,0,0,0.12);
+  backdrop-filter:blur(10px);
+}
+
+.account_identity{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+
+.account_avatar{
+  width:46px;
+  height:46px;
+  border-radius:999px;
+  object-fit:cover;
+  display:block;
+  border:1px solid rgba(31,58,77,0.10);
+  background:#EAF6FF;
+  flex:0 0 auto;
+}
+
+.account_meta{
+  min-width:0;
+}
+
+.account_username{
+  font-size:15px;
+  font-weight:900;
+  color:#1F3A4D;
+  line-height:1.1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.account_stats{
+  margin-top:4px;
+  font-size:12px;
+  font-weight:700;
+  color:rgba(31,58,77,0.68);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.account_signout{
+  flex:0 0 auto;
+  border:none;
+  border-radius:999px;
+  padding:10px 14px;
+  background:rgba(31,58,77,0.08);
+  color:#1F3A4D;
+  font-weight:900;
+  cursor:pointer;
+  transition:transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.account_signout:hover{
+  transform:translateY(-1px);
+  background:rgba(31,58,77,0.12);
+  box-shadow:0 8px 18px rgba(0,0,0,0.08);
+}
+
+@media (max-width:640px){
+  .account_dock{
+    bottom:12px;
+    width:calc(100vw - 16px);
+  }
+
+  .account_dock_inner{
+    padding:10px 12px;
+    gap:10px;
+  }
+
+  .account_avatar{
+    width:40px;
+    height:40px;
+  }
+
+  .account_username{
+    font-size:14px;
+  }
+
+  .account_stats{
+    font-size:11px;
+  }
+
+  .account_signout{
+    padding:9px 12px;
+    font-size:12px;
+  }
+}
