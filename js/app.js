@@ -38,14 +38,17 @@ const badge_wrap = document.querySelector(".swipe_badge")
 const VOTE_STORE_KEY = "frens_vote_store_v2"
 
 function open_modal(){
+  if (!modal) return
   modal.classList.remove("hidden")
 }
 
 function close_modal(){
+  if (!modal) return
   modal.classList.add("hidden")
 }
-
 function bind_modal_close(){
+  if (!modal) return
+
   modal.addEventListener("click", (e) => {
     const target = e.target
     if (target && target.dataset && target.dataset.close === "true"){
@@ -65,10 +68,10 @@ function set_search_status(text){
 
 function set_loading(is_loading){
   if (is_loading){
-    search_input.classList.add("is_loading")
+    if (search_input) search_input.classList.add("is_loading")
     if (swipe_stage) swipe_stage.classList.add("is_loading")
   } else {
-    search_input.classList.remove("is_loading")
+    if (search_input) search_input.classList.remove("is_loading")
     if (swipe_stage) swipe_stage.classList.remove("is_loading")
   }
 }
@@ -501,7 +504,19 @@ async function load_starter_projects(){
 
     projects = featured_sorted
     current_index = 0
-    set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+    const current_user = await get_logged_in_user()
+
+if (current_user){
+  const username =
+    current_user.user_metadata?.preferred_username ||
+    current_user.user_metadata?.user_name ||
+    current_user.user_metadata?.name ||
+    "user"
+
+  set_search_status(`Signed in as @${username}`)
+} else {
+  set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+}
 
     if (!projects.length){
       await ensure_discovery_buffer()
@@ -697,7 +712,19 @@ async function search_live_tokens(query){
       })
 
     current_index = 0
-    set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+    const current_user = await get_logged_in_user()
+
+if (current_user){
+  const username =
+    current_user.user_metadata?.preferred_username ||
+    current_user.user_metadata?.user_name ||
+    current_user.user_metadata?.name ||
+    "user"
+
+  set_search_status(`Signed in as @${username}`)
+} else {
+  set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+}
 
     if (!projects.length){
       await ensure_discovery_buffer()
@@ -751,10 +778,10 @@ sections.forEach(section => io.observe(section))
 
 async function sign_in_with_x(){
   try{
-    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+    const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: "twitter",
       options: {
-        redirectTo: "https://frensindex.github.io"
+        redirectTo: window.location.origin + window.location.pathname
       }
     })
 
@@ -763,8 +790,6 @@ async function sign_in_with_x(){
       alert("X sign in failed. Please try again.")
       return
     }
-
-    close_modal()
   } catch(err){
     console.error("x sign in failed", err)
     alert("X sign in failed. Please try again.")
@@ -780,7 +805,8 @@ async function check_auth_session(){
       return
     }
 
-    const user = data?.user
+    const user = data?.user || null
+    const btn_create = document.getElementById("btn_create_account")
 
     if (user){
       const username =
@@ -791,6 +817,14 @@ async function check_auth_session(){
 
       set_search_status(`Signed in as @${username}`)
       console.log("logged in user", user)
+
+      if (btn_create){
+        btn_create.classList.add("is_hidden")
+      }
+    } else {
+      if (btn_create){
+        btn_create.classList.remove("is_hidden")
+      }
     }
   } catch(err){
     console.error("auth check failed", err)
@@ -798,31 +832,36 @@ async function check_auth_session(){
 }
 
 function bind_events(){
-  btn_fren.addEventListener("click", () => {
-  handle_vote("fren")
-})
+  if (btn_fren){
+    btn_fren.addEventListener("click", () => {
+      handle_vote("fren")
+    })
+  }
 
-btn_rug.addEventListener("click", () => {
-  handle_vote("rug")
-})
+  if (btn_rug){
+    btn_rug.addEventListener("click", () => {
+      handle_vote("rug")
+    })
+  }
 
-if (btn_skip){
-  btn_skip.addEventListener("click", () => {
-    handle_skip()
-  })
-}
+  if (btn_skip){
+    btn_skip.addEventListener("click", () => {
+      handle_skip()
+    })
+  }
 
   if (el_tap_zone){
     el_tap_zone.addEventListener("click", () => {
     })
   }
-  
-const btn_create = document.getElementById("btn_create_account")
-if (btn_create){
-  btn_create.addEventListener("click", async () => {
-    await sign_in_with_x()
-  })
-}
+
+  const btn_create = document.getElementById("btn_create_account")
+  if (btn_create){
+    btn_create.addEventListener("click", async () => {
+      await sign_in_with_x()
+    })
+  }
+
   const close_targets = document.querySelectorAll('[data_close="true"]')
   close_targets.forEach(el => {
     el.addEventListener("click", () => {
@@ -830,14 +869,16 @@ if (btn_create){
     })
   })
 
-  search_input.addEventListener("input", () => {
-    const value = search_input.value || ""
-    clearTimeout(search_timer)
+  if (search_input){
+    search_input.addEventListener("input", () => {
+      const value = search_input.value || ""
+      clearTimeout(search_timer)
 
-    search_timer = setTimeout(() => {
-      search_live_tokens(value)
-    }, 350)
-  })
+      search_timer = setTimeout(() => {
+        search_live_tokens(value)
+      }, 350)
+    })
+  }
 
   let touch_start_x = 0
   let touch_end_x = 0
@@ -861,17 +902,17 @@ if (btn_create){
   }
 
   document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") close_modal()
-  if (e.key === "ArrowRight"){
-    handle_vote("fren")
-  }
-  if (e.key === "ArrowLeft"){
-    handle_vote("rug")
-  }
-  if (e.key === "ArrowDown"){
-    handle_skip()
-  }
-})
+    if (e.key === "Escape") close_modal()
+    if (e.key === "ArrowRight"){
+      handle_vote("fren")
+    }
+    if (e.key === "ArrowLeft"){
+      handle_vote("rug")
+    }
+    if (e.key === "ArrowDown"){
+      handle_skip()
+    }
+  })
 }
 bind_modal_close()
 bind_events()
