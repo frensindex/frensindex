@@ -141,9 +141,6 @@ color:#27445D;
     max-width:220px;
   }
 }
-.auth_btn.is_hidden{
-  display:none !important;
-}
 
 .hero{
   position:relative;
