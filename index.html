@@ -5,59 +5,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FRENS</title>
   <meta name="description" content="Survival of the friendliest. Union over division.">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
-<link rel="icon" type="image/png" href="fren-favicon.png">
+  <link rel="icon" type="image/png" href="fren-favicon.png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
-  <body>
+<body>
   <header class="site_header">
-  <div class="container header_row">
-    <div class="brand">
-      <img src="images/frens-logo.png" alt="FRENS" class="brand_logo">
+    <div class="container header_row">
+      <div class="brand">
+        <img src="images/frens-logo.png" alt="FRENS" class="brand_logo">
+      </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<button id="btn_create_account" class="auth_btn floating_auth_btn" type="button">
-  New Account / Sign in with X
-</button>
+  <button id="btn_create_account" class="auth_btn floating_auth_btn" type="button">
+    New Account / Sign in with X
+  </button>
 
   <main>
     <section class="hero">
-<div class="floating_blocks" aria-hidden="true">
-  <div class="cube c1"><div class="cube_inner">
-    <div class="face front">F</div><div class="face back">F</div>
-    <div class="face right">F</div><div class="face left">F</div>
-    <div class="face top">F</div><div class="face bottom">F</div>
-  </div></div>
+      <div class="floating_blocks" aria-hidden="true">
+        <div class="cube c1"><div class="cube_inner">
+          <div class="face front">F</div><div class="face back">F</div>
+          <div class="face right">F</div><div class="face left">F</div>
+          <div class="face top">F</div><div class="face bottom">F</div>
+        </div></div>
 
-  <div class="cube c2"><div class="cube_inner">
-    <div class="face front">R</div><div class="face back">R</div>
-    <div class="face right">R</div><div class="face left">R</div>
-    <div class="face top">R</div><div class="face bottom">R</div>
-  </div></div>
+        <div class="cube c2"><div class="cube_inner">
+          <div class="face front">R</div><div class="face back">R</div>
+          <div class="face right">R</div><div class="face left">R</div>
+          <div class="face top">R</div><div class="face bottom">R</div>
+        </div></div>
 
-  <div class="cube c3"><div class="cube_inner">
-    <div class="face front">E</div><div class="face back">E</div>
-    <div class="face right">E</div><div class="face left">E</div>
-    <div class="face top">E</div><div class="face bottom">E</div>
-  </div></div>
+        <div class="cube c3"><div class="cube_inner">
+          <div class="face front">E</div><div class="face back">E</div>
+          <div class="face right">E</div><div class="face left">E</div>
+          <div class="face top">E</div><div class="face bottom">E</div>
+        </div></div>
 
-  <div class="cube c4"><div class="cube_inner">
-    <div class="face front">N</div><div class="face back">N</div>
-    <div class="face right">N</div><div class="face left">N</div>
-    <div class="face top">N</div><div class="face bottom">N</div>
-  </div></div>
+        <div class="cube c4"><div class="cube_inner">
+          <div class="face front">N</div><div class="face back">N</div>
+          <div class="face right">N</div><div class="face left">N</div>
+          <div class="face top">N</div><div class="face bottom">N</div>
+        </div></div>
 
-  <div class="cube c5"><div class="cube_inner">
-    <div class="face front">S</div><div class="face back">S</div>
-    <div class="face right">S</div><div class="face left">S</div>
-    <div class="face top">S</div><div class="face bottom">S</div>
-  </div></div>
-</div>
-    <div class="container hero_grid"></div>
+        <div class="cube c5"><div class="cube_inner">
+          <div class="face front">S</div><div class="face back">S</div>
+          <div class="face right">S</div><div class="face left">S</div>
+          <div class="face top">S</div><div class="face bottom">S</div>
+        </div></div>
+      </div>
+
+      <div class="container hero_grid"></div>
     </section>
 
     <section id="fren_index" class="section section_alt">
@@ -66,112 +67,112 @@
           <h2 class="section_title">The Fren Index</h2>
           <div class="search_wrap">
             <input
-  id="search_input"
-  class="search_input"
-  type="search"
-  placeholder="search token name or paste contract"
-  autocomplete="off"
-  spellcheck="false"
->
+              id="search_input"
+              class="search_input"
+              type="search"
+              placeholder="search token name or paste contract"
+              autocomplete="off"
+              spellcheck="false"
+            >
           </div>
         </div>
-<div id="search_meta" class="search_meta">
-  <span id="search_status">Search any token to load it into the index.</span>
-</div>
+
+        <div id="search_meta" class="search_meta">
+          <span id="search_status">Search any token to load it into the index.</span>
+        </div>
+
         <div class="deck_wrap tinder_wrap">
+          <div class="swipe_stage">
+            <div class="swipe_stack swipe_back_two"></div>
+            <div class="swipe_stack swipe_back_one"></div>
 
-  <div class="swipe_stage">
+            <div id="project_card" class="swipe_card">
+              <img id="card_image" class="swipe_image" src="" alt="project image">
+              <div id="swipe_feedback" class="swipe_feedback"></div>
 
-    <div class="swipe_stack swipe_back_two"></div>
-    <div class="swipe_stack swipe_back_one"></div>
+              <div class="swipe_overlay_top">
+                <div class="swipe_project_meta">
+                  <div class="swipe_name" id="card_name">Search a Token</div>
+                  <div class="swipe_ticker" id="card_ticker"></div>
+                </div>
 
-    <div id="project_card" class="swipe_card">
-  <img id="card_image" class="swipe_image" src="" alt="project image">
-  <div id="swipe_feedback" class="swipe_feedback"></div>
+                <div class="swipe_badge">
+                  <img id="card_badge_img" src="images/badge-gold.png" alt="project badge">
+                </div>
+              </div>
 
-  <div class="swipe_overlay_top">
-    <div class="swipe_project_meta">
-      <div class="swipe_name" id="card_name">Search a Token</div>
-      <div class="swipe_ticker" id="card_ticker"></div>
-    </div>
+              <div class="swipe_overlay_bottom">
+                <div class="swipe_bottom_row">
+                  <div class="swipe_score">
+                    <span class="swipe_score_label">Pack Score</span>
+                    <span id="card_score" class="swipe_score_value">0</span>
+                  </div>
 
-    <div class="swipe_badge">
-      <img id="card_badge_img" src="images/badge-gold.png" alt="project badge">
-    </div>
-  </div>
+                  <a id="btn_chart" class="swipe_chart_btn" href="#" target="_blank" rel="noreferrer">
+                    view chart
+                  </a>
+                </div>
 
-  <div class="swipe_overlay_bottom">
-    <div class="swipe_bottom_row">
-      <div class="swipe_score">
-        <span class="swipe_score_label">Pack Score</span>
-        <span id="card_score" class="swipe_score_value">0</span>
+                <div class="swipe_button_row">
+                  <button id="btn_rug" class="swipe_action swipe_rug" type="button">
+                    <img src="images/rug-icon.png" alt="rug">
+                  </button>
+
+                  <button id="btn_skip" class="swipe_action swipe_skip" type="button">
+                    skip
+                  </button>
+
+                  <button id="btn_fren" class="swipe_action swipe_fren" type="button">
+                    <img src="images/fren-icon.png" alt="fren">
+                  </button>
+                </div>
+              </div>
+
+              <button id="card_tap_zone" class="card_tap_zone" type="button" aria-label="open project details"></button>
+            </div>
+          </div>
+
+          <div class="deck_side">
+            <div class="panel">
+              <div class="panel_title">How it works</div>
+              <div class="panel_text">
+                Swipe right for fren. Swipe left for rug. Or save a signal and Skip. Tap "view chart" to see more details.
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel_title">Badges</div>
+              <div class="panel_text">
+                Higher quality actors will matter more over time as the reputation layer grows.
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <a id="btn_chart" class="swipe_chart_btn" href="#" target="_blank" rel="noreferrer">
-        view chart
-      </a>
-    </div>
-
-    <div class="swipe_button_row">
-      <button id="btn_rug" class="swipe_action swipe_rug" type="button">
-        <img src="images/rug-icon.png" alt="rug">
-      </button>
-      
-<button id="btn_skip" class="swipe_action swipe_skip" type="button">
-  skip
-</button>
-      
-      <button id="btn_fren" class="swipe_action swipe_fren" type="button">
-        <img src="images/fren-icon.png" alt="fren">
-      </button>
-    </div>
-  </div>
-
-  <button id="card_tap_zone" class="card_tap_zone" type="button" aria-label="open project details"></button>
-</div>
-  </div>
-
-  <div class="deck_side">
-    <div class="panel">
-      <div class="panel_title">How it works</div>
-      <div class="panel_text">
-        Swipe right for fren. Swipe left for rug. Or save a signal and Skip. Tap "view chart" to see more details.
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel_title">Badges</div>
-      <div class="panel_text">
-        Higher quality actors will matter more over time as the reputation layer grows.
-      </div>
-    </div>
-  </div>
-
-</div>
     </section>
-<section class="section">
-  <div class="container">
 
-    <h2 class="section_title">Survival of the Friendliest</h2>
+    <section class="section">
+      <div class="container">
+        <h2 class="section_title">Survival of the Friendliest</h2>
 
-    <p class="section_text">
-      Crypto has become a battlefield of manipulation, extraction and short-term hype cycles.
-      FrenS Index flips that model. Instead of rewarding insiders and coordinated pumps,
-      the community decides what deserves attention.
-    </p>
+        <p class="section_text">
+          Crypto has become a battlefield of manipulation, extraction and short-term hype cycles.
+          FrenS Index flips that model. Instead of rewarding insiders and coordinated pumps,
+          the community decides what deserves attention.
+        </p>
 
-    <p class="section_text">
-      The result is a discovery engine where cooperation beats extraction and the best projects rise because people genuinely support them.
-    </p>
+        <p class="section_text">
+          The result is a discovery engine where cooperation beats extraction and the best projects rise because people genuinely support them.
+        </p>
 
-    <div class="article_cta">
-  <a href="https://www.notion.so/Survival-of-the-Friendliest-31d9bc5732f5803fae5eee652d76d80b?source=copy_link" target="_blank" rel="noopener">
-    Read the full Survival of the Friendliest article →
-  </a>
-</div>
+        <div class="article_cta">
+          <a href="https://www.notion.so/Survival-of-the-Friendliest-31d9bc5732f5803fae5eee652d76d80b?source=copy_link" target="_blank" rel="noopener">
+            Read the full Survival of the Friendliest article →
+          </a>
+        </div>
+      </div>
+    </section>
 
-  </div>
-</section>
     <section id="pack" class="section">
       <div class="container">
         <h2 class="section_title">The Pack</h2>
@@ -188,12 +189,26 @@
   </main>
 
   <footer class="site_footer">
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="terms.html">Terms of Service</a>
+  </footer>
 
-<a href="privacy.html">Privacy Policy</a>
-<a href="terms.html">Terms of Service</a>
+  <div id="account_dock" class="account_dock is_hidden">
+    <div class="account_dock_inner">
+      <div class="account_identity">
+        <img id="account_avatar" class="account_avatar" src="" alt="profile image">
+        <div class="account_meta">
+          <div id="account_username" class="account_username">@user</div>
+          <div id="account_stats" class="account_stats">0 votes • Gold • Rep 0</div>
+        </div>
+      </div>
 
-</footer>
-  
+      <button id="btn_sign_out" class="account_signout" type="button">
+        Sign out
+      </button>
+    </div>
+  </div>
+
   <div id="gate_modal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal_backdrop" data_close="true"></div>
     <div class="modal_card">
