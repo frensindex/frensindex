@@ -781,7 +781,7 @@ async function sign_in_with_x(){
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: "x",
       options: {
-        redirectTo: "https://frensindex.github.io/frensindex"
+        redirectTo: "https://frensindex.github.io/frensindex/"
       }
     })
 
