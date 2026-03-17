@@ -512,7 +512,8 @@ async function handle_vote(type){
   }
 
   await submit_vote_to_db(project, type)
-
+  await load_leaderboard()
+  
   show_feedback(type)
  await set_card(project)
   animate_swipe(type === "fren" ? "right" : "left")
@@ -883,6 +884,88 @@ async function check_auth_session(){
   }
 }
 
+async function load_leaderboard(){
+  const leaderboardStatus = document.getElementById("leaderboard_status")
+  const leaderboardList = document.getElementById("leaderboard_list")
+
+  if (!leaderboardStatus || !leaderboardList) return
+
+  leaderboardStatus.textContent = "Loading leaderboard..."
+  leaderboardList.innerHTML = ""
+
+  try{
+    const { data, error } = await supabaseClient
+      .from("votes")
+      .select("project_id, vote_type")
+
+    if (error){
+      console.error("leaderboard fetch failed", error)
+      leaderboardStatus.textContent = "Could not load leaderboard."
+      return
+    }
+
+    const projectMap = new Map()
+
+    for (const row of data || []){
+      const projectId = row.project_id
+      if (!projectId) continue
+
+      if (!projectMap.has(projectId)){
+        projectMap.set(projectId, {
+          project_id: projectId,
+          fren: 0,
+          rug: 0
+        })
+      }
+
+      const entry = projectMap.get(projectId)
+
+      if (row.vote_type === "fren") entry.fren += 1
+      if (row.vote_type === "rug") entry.rug += 1
+    }
+
+    const ranked = Array.from(projectMap.values())
+      .map(entry => {
+        const total = entry.fren + entry.rug
+        return {
+          ...entry,
+          total,
+          score: calculate_pack_score(entry.fren, entry.rug)
+        }
+      })
+      .filter(entry => entry.total > 0)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10)
+
+    if (!ranked.length){
+      leaderboardStatus.textContent = "No votes yet."
+      return
+    }
+
+    leaderboardStatus.textContent = ""
+    leaderboardList.innerHTML = ranked.map((entry, index) => {
+      return `
+        <div class="leaderboard_row">
+          <div class="leaderboard_rank">#${index + 1}</div>
+          <div class="leaderboard_name">${format_project_label(entry.project_id)}</div>
+          <div class="leaderboard_votes">${entry.total} votes</div>
+          <div class="leaderboard_score">${entry.score} score</div>
+        </div>
+      `
+    }).join("")
+  } catch(err){
+    console.error("leaderboard fetch failed", err)
+    leaderboardStatus.textContent = "Could not load leaderboard."
+  }
+}
+
+function format_project_label(projectId){
+  if (!projectId) return "Unknown"
+
+  if (String(projectId).startsWith("$")) return projectId
+
+  return String(projectId)
+}
 function bind_events(){
   if (btn_fren){
     btn_fren.addEventListener("click", () => {
@@ -977,4 +1060,5 @@ document.addEventListener("DOMContentLoaded", () => {
   bind_events()
   load_starter_projects()
   check_auth_session()
+  load_leaderboard()
 })
