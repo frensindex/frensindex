@@ -795,7 +795,27 @@ async function sign_in_with_x(){
     alert("X sign in failed. Please try again.")
   }
 }
+async function sign_out_user(){
+  try{
+    const { error } = await supabaseClient.auth.signOut()
 
+    if (error){
+      console.error("sign out failed", error)
+      alert("Sign out failed. Please try again.")
+      return
+    }
+
+    const btn_create = document.getElementById("btn_create_account")
+    if (btn_create){
+      btn_create.textContent = "New Account / Sign in with X"
+    }
+
+    set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
+  } catch(err){
+    console.error("sign out failed", err)
+    alert("Sign out failed. Please try again.")
+  }
+}
 async function check_auth_session(){
   try{
     const { data, error } = await supabaseClient.auth.getUser()
@@ -806,6 +826,7 @@ async function check_auth_session(){
     }
 
     const user = data?.user || null
+    const btn_create = document.getElementById("btn_create_account")
 
     if (user){
       const username =
@@ -816,6 +837,14 @@ async function check_auth_session(){
 
       set_search_status(`Signed in as @${username}`)
       console.log("logged in user", user)
+
+      if (btn_create){
+        btn_create.textContent = "Sign out"
+      }
+    } else {
+      if (btn_create){
+        btn_create.textContent = "New Account / Sign in with X"
+      }
     }
   } catch(err){
     console.error("auth check failed", err)
@@ -846,10 +875,16 @@ function bind_events(){
     })
   }
 
-  const btn_create = document.getElementById("btn_create_account")
+    const btn_create = document.getElementById("btn_create_account")
   if (btn_create){
     btn_create.addEventListener("click", async () => {
-      await sign_in_with_x()
+      const user = await get_logged_in_user()
+
+      if (user){
+        await sign_out_user()
+      } else {
+        await sign_in_with_x()
+      }
     })
   }
 
