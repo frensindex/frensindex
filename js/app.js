@@ -779,7 +779,7 @@ sections.forEach(section => io.observe(section))
 async function sign_in_with_x(){
   try{
     const { error } = await supabaseClient.auth.signInWithOAuth({
-      provider: "twitter",
+      provider: "x",
       options: {
         redirectTo: "https://frensindex.github.io/frensindex"
       }
