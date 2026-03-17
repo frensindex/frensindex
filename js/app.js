@@ -898,6 +898,9 @@ async function load_leaderboard(){
       .from("votes")
       .select("project_id, vote_type")
 
+    console.log("leaderboard data", data)
+    console.log("leaderboard error", error)
+
     if (error){
       console.error("leaderboard fetch failed", error)
       leaderboardStatus.textContent = "Could not load leaderboard."
