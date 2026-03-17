@@ -1197,3 +1197,49 @@ animation:shimmer 1.2s infinite;
     font-size:12px;
   }
 }
+.leaderboard_list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:14px;
+}
+
+.leaderboard_row{
+  display:grid;
+  grid-template-columns:72px 1fr 110px 90px;
+  gap:12px;
+  align-items:center;
+  padding:14px 16px;
+  border-radius:18px;
+  background:rgba(255,255,255,0.72);
+  box-shadow:0 10px 24px rgba(0,0,0,0.06);
+}
+
+.leaderboard_rank{
+  font-weight:900;
+  color:#1F3A4D;
+}
+
+.leaderboard_name{
+  font-weight:900;
+  color:#1F3A4D;
+}
+
+.leaderboard_votes,
+.leaderboard_score{
+  font-weight:800;
+  color:rgba(31,58,77,0.78);
+  text-align:right;
+}
+
+@media (max-width:700px){
+  .leaderboard_row{
+    grid-template-columns:56px 1fr;
+    gap:8px;
+  }
+
+  .leaderboard_votes,
+  .leaderboard_score{
+    text-align:left;
+  }
+}
