@@ -806,7 +806,6 @@ async function check_auth_session(){
     }
 
     const user = data?.user || null
-    const btn_create = document.getElementById("btn_create_account")
 
     if (user){
       const username =
@@ -817,14 +816,6 @@ async function check_auth_session(){
 
       set_search_status(`Signed in as @${username}`)
       console.log("logged in user", user)
-
-      if (btn_create){
-        btn_create.classList.add("is_hidden")
-      }
-    } else {
-      if (btn_create){
-        btn_create.classList.remove("is_hidden")
-      }
     }
   } catch(err){
     console.error("auth check failed", err)
@@ -914,7 +905,9 @@ function bind_events(){
     }
   })
 }
-bind_modal_close()
-bind_events()
-load_starter_projects()
-check_auth_session()
+document.addEventListener("DOMContentLoaded", () => {
+  bind_modal_close()
+  bind_events()
+  load_starter_projects()
+  check_auth_session()
+})
