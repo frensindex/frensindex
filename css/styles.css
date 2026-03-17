@@ -125,6 +125,22 @@ color:#27445D;
   transform:translateY(-1px);
   box-shadow:0 6px 18px rgba(0,212,170,0.25);
 }
+.floating_auth_btn{
+  position:fixed;
+  top:118px;
+  right:18px;
+  z-index:40;
+}
+
+@media (max-width:700px){
+  .floating_auth_btn{
+    top:110px;
+    right:14px;
+    padding:10px 14px;
+    font-size:14px;
+    max-width:220px;
+  }
+}
 .auth_btn.is_hidden{
   display:none !important;
 }
