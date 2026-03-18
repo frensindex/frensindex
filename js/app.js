@@ -12,7 +12,8 @@ let discovery_loading = false
 const DISCOVERY_BATCH_SIZE = 24
 const MIN_MARKET_CAP = 30000
 const MAX_AGE_DAYS = 7
-const DAILY_SWIPE_LIMIT_GUEST = 8
+const DAILY_SWIPE_LIMIT_GUEST = 5
+const DAILY_SWIPE_LIMIT_USER = 10
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
 const el_name = document.getElementById("card_name")
 const el_ticker = document.getElementById("card_ticker")
@@ -106,6 +107,30 @@ async function get_logged_in_user(){
     return data?.user || null
   } catch {
     return null
+  }
+}
+async function get_user_vote_count_today(){
+  try{
+    const user = await get_logged_in_user()
+    if (!user) return 0
+
+    const since = new Date(Date.now() - ONE_DAY_MS).toISOString()
+
+    const { data, error } = await supabaseClient
+      .from("votes")
+      .select("id")
+      .eq("user_id", user.id)
+      .gte("created_at", since)
+
+    if (error){
+      console.error("count votes failed", error)
+      return 0
+    }
+
+    return data?.length || 0
+  } catch(err){
+    console.error("count votes failed", err)
+    return 0
   }
 }
 function is_same_day_vote(timestamp){
@@ -246,7 +271,15 @@ async function handle_skip(){
 
   const user = await get_logged_in_user()
   const is_logged_in = !!user
+  
+if (is_logged_in){
+  const used = await get_user_vote_count_today()
 
+  if (used >= DAILY_SWIPE_LIMIT_USER){
+    alert("You’ve used all your signals for today.")
+    return
+  }
+}
   if (!is_logged_in && !has_guest_swipes_remaining()){
     alert("You’ve used all guest swipes for today. Create an account to unlock more.")
     return
@@ -504,7 +537,15 @@ async function handle_vote(type){
 
   const user = await get_logged_in_user()
   const is_logged_in = !!user
+  
+if (is_logged_in){
+  const used = await get_user_vote_count_today()
 
+  if (used >= DAILY_SWIPE_LIMIT_USER){
+    alert("You’ve used all your signals for today.")
+    return
+  }
+}
   if (!is_logged_in && !has_guest_swipes_remaining()){
     alert("You’ve used all guest swipes for today. Create an account to unlock more.")
     return
@@ -969,7 +1010,10 @@ if (avatar && avatar.includes("_normal")){
     if (el_profile_total_votes) el_profile_total_votes.textContent = String(totalVotes)
     if (el_profile_fren_votes) el_profile_fren_votes.textContent = String(frenVotes)
     if (el_profile_rug_votes) el_profile_rug_votes.textContent = String(rugVotes)
-    if (el_profile_signals_left) el_profile_signals_left.textContent = "∞"
+    const used = await get_user_vote_count_today()
+const remaining = Math.max(0, DAILY_SWIPE_LIMIT_USER - used)
+
+if (el_profile_signals_left) el_profile_signals_left.textContent = String(remaining)
     if (el_profile_status) el_profile_status.textContent = "Your public standing grows as you participate."
   } catch(err){
     console.error("profile panel load failed", err)
