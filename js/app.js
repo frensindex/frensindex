@@ -1,14 +1,7 @@
 const supabaseUrl = "https://gkqskrhxrfvexxrzcfan.supabase.co"
 const supabaseKey = "sb_publishable_ZJjq7WefqtMN7bLEF6Yffw_kmYpjC6V"
-
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey)
 
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
-  console.log("auth changed", event)
-
-  await check_auth_session()
-  await load_profile_panel()
-})
 let starter_projects = []
 let projects = []
 let current_index = 0
@@ -1214,4 +1207,11 @@ document.addEventListener("DOMContentLoaded", () => {
   check_auth_session()
   load_leaderboard()
   load_profile_panel()
+
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    console.log("auth changed", event)
+
+    await check_auth_session()
+    await load_profile_panel()
+  })
 })
