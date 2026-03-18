@@ -1206,12 +1206,9 @@ document.addEventListener("DOMContentLoaded", () => {
   load_starter_projects()
   check_auth_session()
   load_leaderboard()
-  load_profile_panel()
 
-  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  supabaseClient.auth.onAuthStateChange(async (event) => {
     console.log("auth changed", event)
-
     await check_auth_session()
-    await load_profile_panel()
   })
 })
