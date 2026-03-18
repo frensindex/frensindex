@@ -526,6 +526,7 @@ async function handle_vote(type){
 
   await submit_vote_to_db(project, type)
   await load_leaderboard()
+  await load_profile_panel()
   
   show_feedback(type)
  await set_card(project)
@@ -896,6 +897,8 @@ async function sign_out_user(){
     if (btn_create){
       btn_create.textContent = "New Account / Sign in with X"
     }
+
+    await load_profile_panel()
     set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
   } catch(err){
     console.error("sign out failed", err)
@@ -999,6 +1002,8 @@ async function check_auth_session(){
         btn_create.textContent = "New Account / Sign in with X"
       }
     }
+
+    await load_profile_panel()
   } catch(err){
     console.error("auth check failed", err)
   }
@@ -1197,10 +1202,11 @@ function bind_events(){
     }
   })
 }
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   bind_modal_close()
   bind_events()
-  load_starter_projects()
-  check_auth_session()
-  load_leaderboard()
+  await load_starter_projects()
+  await check_auth_session()
+  await load_leaderboard()
+  await load_profile_panel()
 })
