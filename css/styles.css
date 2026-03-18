@@ -1243,3 +1243,125 @@ animation:shimmer 1.2s infinite;
     text-align:left;
   }
 }
+.profile_panel{
+  margin-top:20px;
+  background:rgba(255,255,255,0.55);
+  border-radius:24px;
+  padding:18px;
+  box-shadow:0 18px 50px rgba(0,0,0,0.08);
+  border:1px solid rgba(31,58,77,0.08);
+}
+
+.profile_panel_header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+
+.profile_identity{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.profile_avatar{
+  width:68px;
+  height:68px;
+  border-radius:999px;
+  object-fit:cover;
+  background:rgba(255,255,255,0.8);
+  border:1px solid rgba(31,58,77,0.10);
+  box-shadow:0 8px 20px rgba(0,0,0,0.08);
+}
+
+.profile_identity_text{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.profile_username{
+  font-size:22px;
+  font-weight:900;
+  color:#1F3A4D;
+}
+
+.profile_badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:max-content;
+  padding:8px 12px;
+  border-radius:999px;
+  background:rgba(246,211,107,0.25);
+  color:#1F3A4D;
+  font-weight:800;
+  font-size:13px;
+}
+
+.profile_rep_wrap{
+  min-width:120px;
+  text-align:right;
+}
+
+.profile_rep_value{
+  font-size:32px;
+  font-weight:950;
+  color:#1F3A4D;
+  line-height:1;
+}
+
+.profile_stats_grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:12px;
+}
+
+.profile_stat_card{
+  background:rgba(255,255,255,0.72);
+  border-radius:18px;
+  padding:14px;
+  border:1px solid rgba(31,58,77,0.08);
+}
+
+.profile_stat_label{
+  font-size:12px;
+  font-weight:800;
+  color:rgba(31,58,77,0.62);
+  margin-bottom:6px;
+}
+
+.profile_stat_value{
+  font-size:24px;
+  font-weight:950;
+  color:#1F3A4D;
+  line-height:1.1;
+}
+
+.profile_status{
+  margin-top:14px;
+  font-size:14px;
+}
+
+@media (max-width:900px){
+  .profile_stats_grid{
+    grid-template-columns:repeat(2, 1fr);
+  }
+}
+
+@media (max-width:520px){
+  .profile_stats_grid{
+    grid-template-columns:1fr;
+  }
+
+  .profile_rep_wrap{
+    text-align:left;
+  }
+
+  .profile_username{
+    font-size:20px;
+  }
+}
