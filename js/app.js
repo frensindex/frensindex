@@ -3,6 +3,12 @@ const supabaseKey = "sb_publishable_ZJjq7WefqtMN7bLEF6Yffw_kmYpjC6V"
 
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey)
 
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  console.log("auth changed", event)
+
+  await check_auth_session()
+  await load_profile_panel()
+})
 let starter_projects = []
 let projects = []
 let current_index = 0
@@ -24,7 +30,15 @@ const el_image = document.getElementById("card_image")
 const el_tap_zone = document.getElementById("card_tap_zone")
 const el_search_status = document.getElementById("search_status")
 const el_feedback = document.getElementById("swipe_feedback")
-
+const el_profile_avatar = document.getElementById("profile_avatar")
+const el_profile_username = document.getElementById("profile_username")
+const el_profile_badge = document.getElementById("profile_badge")
+const el_profile_rep = document.getElementById("profile_rep")
+const el_profile_total_votes = document.getElementById("profile_total_votes")
+const el_profile_fren_votes = document.getElementById("profile_fren_votes")
+const el_profile_rug_votes = document.getElementById("profile_rug_votes")
+const el_profile_signals_left = document.getElementById("profile_signals_left")
+const el_profile_status = document.getElementById("profile_status")
 const btn_fren = document.getElementById("btn_fren")
 const btn_rug = document.getElementById("btn_rug")
 const btn_skip = document.getElementById("btn_skip")
@@ -186,16 +200,19 @@ function save_vote(project, type){
 
 async function submit_vote_to_db(project, type){
   try{
+    const currentUser = await get_logged_in_user()
+
     const { error } = await supabaseClient
       .from("votes")
       .insert({
-  project_id: project.project_id || project.pair_address || project.token_address || project.name,
-  pair_address: project.pair_address || null,
-  token_address: project.token_address || null,
-  project_name: project.name || null,
-  project_ticker: project.ticker || null,
-  vote_type: type
-})
+        user_id: currentUser?.id || null,
+        project_id: project.project_id || project.pair_address || project.token_address || project.name,
+        pair_address: project.pair_address || null,
+        token_address: project.token_address || null,
+        project_name: project.name || null,
+        project_ticker: project.ticker || null,
+        vote_type: type
+      })
 
     if (error){
       console.error("vote insert failed", error)
@@ -204,6 +221,7 @@ async function submit_vote_to_db(project, type){
     console.error("vote insert failed", err)
   }
 }
+
 function save_skip(project){
   if (!has_guest_swipes_remaining() || has_voted_today(project)){
     return false
@@ -515,6 +533,7 @@ async function handle_vote(type){
 
   await submit_vote_to_db(project, type)
   await load_leaderboard()
+  await load_profile_panel()
   
   show_feedback(type)
  await set_card(project)
@@ -885,11 +904,78 @@ async function sign_out_user(){
     if (btn_create){
       btn_create.textContent = "New Account / Sign in with X"
     }
-
+    await load_profile_panel()
     set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
   } catch(err){
     console.error("sign out failed", err)
     alert("Sign out failed. Please try again.")
+  }
+}
+
+async function load_profile_panel(){
+  try{
+    const user = await get_logged_in_user()
+
+    if (!user){
+      if (el_profile_avatar) el_profile_avatar.src = "images/badge-gold.png"
+      if (el_profile_username) el_profile_username.textContent = "Guest"
+      if (el_profile_badge) el_profile_badge.textContent = "Seed"
+      if (el_profile_rep) el_profile_rep.textContent = "0"
+      if (el_profile_total_votes) el_profile_total_votes.textContent = "0"
+      if (el_profile_fren_votes) el_profile_fren_votes.textContent = "0"
+      if (el_profile_rug_votes) el_profile_rug_votes.textContent = "0"
+      if (el_profile_signals_left) el_profile_signals_left.textContent = String(DAILY_SWIPE_LIMIT_GUEST - get_guest_swipe_count_today())
+      if (el_profile_status) el_profile_status.textContent = "Sign in to build your standing in the pack."
+      return
+    }
+
+    const username =
+      user.user_metadata?.preferred_username ||
+      user.user_metadata?.user_name ||
+      user.user_metadata?.name ||
+      "user"
+
+    const avatar =
+      user.user_metadata?.avatar_url ||
+      user.user_metadata?.picture ||
+      "images/badge-gold.png"
+
+    const { data, error } = await supabaseClient
+      .from("votes")
+      .select("vote_type")
+      .eq("user_id", user.id)
+
+    let frenVotes = 0
+    let rugVotes = 0
+
+    if (!error && Array.isArray(data)){
+      for (const row of data){
+        if (row.vote_type === "fren") frenVotes++
+        if (row.vote_type === "rug") rugVotes++
+      }
+    }
+
+    const totalVotes = frenVotes + rugVotes
+    const repScore = totalVotes * 10
+
+    let badgeTier = "Seed"
+    if (repScore >= 500) badgeTier = "Oracle"
+    else if (repScore >= 250) badgeTier = "Pathfinder"
+    else if (repScore >= 100) badgeTier = "Signaler"
+    else if (repScore >= 40) badgeTier = "Scout"
+
+    if (el_profile_avatar) el_profile_avatar.src = avatar
+    if (el_profile_username) el_profile_username.textContent = `@${username}`
+    if (el_profile_badge) el_profile_badge.textContent = badgeTier
+    if (el_profile_rep) el_profile_rep.textContent = String(repScore)
+    if (el_profile_total_votes) el_profile_total_votes.textContent = String(totalVotes)
+    if (el_profile_fren_votes) el_profile_fren_votes.textContent = String(frenVotes)
+    if (el_profile_rug_votes) el_profile_rug_votes.textContent = String(rugVotes)
+    if (el_profile_signals_left) el_profile_signals_left.textContent = "∞"
+    if (el_profile_status) el_profile_status.textContent = "Your public standing grows as you participate."
+  } catch(err){
+    console.error("profile panel load failed", err)
+    if (el_profile_status) el_profile_status.textContent = "Could not load profile."
   }
 }
 async function check_auth_session(){
@@ -922,6 +1008,7 @@ async function check_auth_session(){
         btn_create.textContent = "New Account / Sign in with X"
       }
     }
+    await load_profile_panel()
   } catch(err){
     console.error("auth check failed", err)
   }
