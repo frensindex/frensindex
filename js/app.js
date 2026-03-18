@@ -929,10 +929,14 @@ async function load_profile_panel(){
       user.user_metadata?.name ||
       "user"
 
-    const avatar =
-      user.user_metadata?.avatar_url ||
-      user.user_metadata?.picture ||
-      "images/badge-gold.png"
+    let avatar =
+  user.user_metadata?.avatar_url ||
+  user.user_metadata?.picture ||
+  "images/badge-gold.png"
+
+if (avatar && avatar.includes("_normal")){
+  avatar = avatar.replace("_normal", "_400x400")
+}
 
     const { data, error } = await supabaseClient
       .from("votes")
