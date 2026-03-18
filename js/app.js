@@ -1213,4 +1213,5 @@ document.addEventListener("DOMContentLoaded", () => {
   load_starter_projects()
   check_auth_session()
   load_leaderboard()
+  load_profile_panel()
 })
