@@ -526,7 +526,6 @@ async function handle_vote(type){
 
   await submit_vote_to_db(project, type)
   await load_leaderboard()
-  await load_profile_panel()
   
   show_feedback(type)
  await set_card(project)
@@ -897,7 +896,6 @@ async function sign_out_user(){
     if (btn_create){
       btn_create.textContent = "New Account / Sign in with X"
     }
-    await load_profile_panel()
     set_search_status(`Guest mode: ${DAILY_SWIPE_LIMIT_GUEST} swipes per day. Search any token to load it into the index.`)
   } catch(err){
     console.error("sign out failed", err)
@@ -1206,9 +1204,4 @@ document.addEventListener("DOMContentLoaded", () => {
   load_starter_projects()
   check_auth_session()
   load_leaderboard()
-
-  supabaseClient.auth.onAuthStateChange(async (event) => {
-    console.log("auth changed", event)
-    await check_auth_session()
-  })
 })
