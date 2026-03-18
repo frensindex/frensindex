@@ -999,7 +999,6 @@ async function check_auth_session(){
         btn_create.textContent = "New Account / Sign in with X"
       }
     }
-    await load_profile_panel()
   } catch(err){
     console.error("auth check failed", err)
   }
