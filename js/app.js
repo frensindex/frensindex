@@ -247,38 +247,6 @@ async function handle_skip(){
   animate_swipe("left")
 }
 
-  const user = await get_logged_in_user()
-  const is_logged_in = !!user
-  
-if (is_logged_in){
-  const used = await get_user_vote_count_today()
-
-  if (used >= DAILY_SWIPE_LIMIT_USER){
-    alert("You’ve used all your signals for today.")
-    return
-  }
-}
-  if (!is_logged_in && !has_guest_swipes_remaining()){
-    alert("You’ve used all guest swipes for today. Create an account to unlock more.")
-    return
-  }
-
-  if (!is_logged_in && has_voted_today(project)){
-    alert("You already acted on this project today.")
-    return
-  }
-
-  if (!is_logged_in){
-    const saved = save_skip(project)
-
-    if (!saved){
-      alert("You already acted on this project today.")
-      return
-    }
-  }
-
-  animate_swipe("left")
-}
 function calculate_pack_score(fren_votes, rug_votes){
   const total = fren_votes + rug_votes
   if (total <= 0) return 0
