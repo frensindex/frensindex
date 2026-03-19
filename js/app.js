@@ -674,8 +674,6 @@ async function fetch_discovery_projects(){
     chart_url: pair.url || ""
   }
 
-  const not_voted_today = !has_voted_today(project_like)
-
   return chain_ok && not_seen && not_voted_today && qualifies_for_discovery(pair)
 })
 
