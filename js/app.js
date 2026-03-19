@@ -240,34 +240,12 @@ async function submit_vote_to_db(project, type){
   }
 }
 
-function save_skip(project){
-  if (!has_guest_swipes_remaining() || has_voted_today(project)){
-    return false
-  }
-
-  const store = get_store()
-  const key = get_project_key(project)
-  const current = get_vote_counts(project)
-
-  store[key] = {
-    fren_votes: current.fren_votes,
-    rug_votes: current.rug_votes,
-    last_vote_type: "skip",
-    last_voted_at: get_now()
-  }
-
-  set_store(store)
-  return true
-}
-
 async function handle_skip(){
   const project = get_current_project()
   if (!project) return
 
-  if (project.is_system_card){
-    animate_swipe("left")
-    return
-  }
+  animate_swipe("left")
+}
 
   const user = await get_logged_in_user()
   const is_logged_in = !!user
