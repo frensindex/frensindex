@@ -10,8 +10,8 @@ let seen_pair_addresses = new Set()
 let discovery_loading = false
 
 const DISCOVERY_BATCH_SIZE = 24
-const MIN_MARKET_CAP = 30000
-const MAX_AGE_DAYS = 7
+const MIN_MARKET_CAP = 20000
+const MAX_AGE_DAYS = 10
 const DAILY_SWIPE_LIMIT_GUEST = 5
 const DAILY_SWIPE_LIMIT_USER = 10
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
@@ -625,8 +625,8 @@ function qualifies_for_discovery(pair){
   const volume_24h = Number(pair.volume?.h24 || 0)
   const price_change = Number(pair.priceChange?.h24 || 0)
 
-  const liquidity_ok = liquidity >= 10000
-  const volume_ok = volume_24h >= 5000
+  const liquidity_ok = liquidity >= 3000
+  const volume_ok = volume_24h >= 1000
   const price_ok = price_change > -80
 
   return (
@@ -655,7 +655,7 @@ async function fetch_discovery_projects(){
 
     if (!token_addresses.length) return []
 
-    const shuffled_addresses = shuffle_array(token_addresses).slice(0, 30)
+    const shuffled_addresses = shuffle_array(token_addresses).slice(0, 120)
 
     const tokens_url = `https://api.dexscreener.com/tokens/v1/solana/${shuffled_addresses.join(",")}`
     const pairs_res = await fetch(tokens_url)
