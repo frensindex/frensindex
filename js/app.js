@@ -655,7 +655,7 @@ async function fetch_discovery_projects(){
 
     if (!token_addresses.length) return []
 
-    const shuffled_addresses = shuffle_array(token_addresses).slice(0, 120)
+    const shuffled_addresses = shuffle_array(token_addresses).slice(0, 40)
 
     const tokens_url = `https://api.dexscreener.com/tokens/v1/solana/${shuffled_addresses.join(",")}`
     const pairs_res = await fetch(tokens_url)
@@ -667,14 +667,7 @@ async function fetch_discovery_projects(){
   const chain_ok = String(pair.chainId || "").toLowerCase() === "solana"
   const not_seen = !seen_pair_addresses.has(pair.pairAddress)
 
-  const project_like = {
-    project_id: pair.pairAddress,
-    pair_address: pair.pairAddress,
-    token_address: pair.baseToken?.address || "",
-    chart_url: pair.url || ""
-  }
-
-  return chain_ok && not_seen && not_voted_today && qualifies_for_discovery(pair)
+  return chain_ok && not_seen && qualifies_for_discovery(pair)
 })
 
     const shuffled_pairs = shuffle_array(filtered_pairs)
