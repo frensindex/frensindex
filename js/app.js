@@ -625,8 +625,8 @@ function qualifies_for_discovery(pair){
   const volume_24h = Number(pair.volume?.h24 || 0)
   const price_change = Number(pair.priceChange?.h24 || 0)
 
-  const liquidity_ok = liquidity >= 3000
-  const volume_ok = volume_24h >= 1000
+  const liquidity_ok = liquidity >= 1000
+  const volume_ok = volume_24h >= 500
   const price_ok = price_change > -80
 
   return (
@@ -655,7 +655,7 @@ async function fetch_discovery_projects(){
 
     if (!token_addresses.length) return []
 
-    const shuffled_addresses = shuffle_array(token_addresses).slice(0, 40)
+    const shuffled_addresses = shuffle_array(token_addresses).slice(0, 30)
 
     const tokens_url = `https://api.dexscreener.com/tokens/v1/solana/${shuffled_addresses.join(",")}`
     const pairs_res = await fetch(tokens_url)
