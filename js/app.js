@@ -667,7 +667,16 @@ async function fetch_discovery_projects(){
   const chain_ok = String(pair.chainId || "").toLowerCase() === "solana"
   const not_seen = !seen_pair_addresses.has(pair.pairAddress)
 
-  return chain_ok && not_seen && qualifies_for_discovery(pair)
+  const project_like = {
+    project_id: pair.pairAddress,
+    pair_address: pair.pairAddress,
+    token_address: pair.baseToken?.address || "",
+    chart_url: pair.url || ""
+  }
+
+  const not_voted_today = !has_voted_today(project_like)
+
+  return chain_ok && not_seen && not_voted_today && qualifies_for_discovery(pair)
 })
 
     const shuffled_pairs = shuffle_array(filtered_pairs)
