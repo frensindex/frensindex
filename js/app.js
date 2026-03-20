@@ -649,39 +649,69 @@ async function fetch_discovery_projects(){
       ? profiles_data.filter(item => String(item.chainId || "").toLowerCase() === "solana")
       : []
 
-    const token_addresses = solana_profiles
-      .map(item => item.tokenAddress)
-      .filter(Boolean)
+    const token_addresses = shuffle_array(
+      solana_profiles
+        .map(item => item.tokenAddress)
+        .filter(Boolean)
+    )
 
     if (!token_addresses.length) return []
 
-    const shuffled_addresses = shuffle_array(token_addresses).slice(0, 30)
+    let collected_pairs = []
+    const batch_size = 30
 
-    const tokens_url = `https://api.dexscreener.com/tokens/v1/solana/${shuffled_addresses.join(",")}`
-    const pairs_res = await fetch(tokens_url)
-    const pairs_data = await pairs_res.json()
+    for (let i = 0; i < token_addresses.length; i += batch_size){
+      if (collected_pairs.length >= DISCOVERY_BATCH_SIZE) break
 
-    const pairs = Array.isArray(pairs_data) ? pairs_data : []
+      const batch = token_addresses.slice(i, i + batch_size)
+      if (!batch.length) continue
 
-    const filtered_pairs = pairs.filter(pair => {
-  const chain_ok = String(pair.chainId || "").toLowerCase() === "solana"
-  const not_seen = !seen_pair_addresses.has(pair.pairAddress)
+      const tokens_url = `https://api.dexscreener.com/tokens/v1/solana/${batch.join(",")}`
 
-  const project_like = {
-    project_id: pair.pairAddress,
-    pair_address: pair.pairAddress,
-    token_address: pair.baseToken?.address || "",
-    chart_url: pair.url || ""
-  }
+      try{
+        const pairs_res = await fetch(tokens_url)
+        const pairs_data = await pairs_res.json()
+        const pairs = Array.isArray(pairs_data) ? pairs_data : []
 
-  const not_voted_today = !has_voted_today(project_like)
+        const filtered_pairs = pairs.filter(pair => {
+          const chain_ok = String(pair.chainId || "").toLowerCase() === "solana"
+          const not_seen = !seen_pair_addresses.has(pair.pairAddress)
 
-  return chain_ok && not_seen && not_voted_today && qualifies_for_discovery(pair)
-})
+          const project_like = {
+            project_id: pair.pairAddress,
+            pair_address: pair.pairAddress,
+            token_address: pair.baseToken?.address || "",
+            chart_url: pair.url || ""
+          }
 
-    const shuffled_pairs = shuffle_array(filtered_pairs)
+          const not_voted_today = !has_voted_today(project_like)
 
-    const mapped = shuffled_pairs.slice(0, DISCOVERY_BATCH_SIZE).map(map_pair_to_project)
+          return chain_ok && not_seen && not_voted_today && qualifies_for_discovery(pair)
+        })
+
+        collected_pairs.push(...filtered_pairs)
+      } catch(err){
+        console.error("batch discovery fetch failed", err)
+      }
+    }
+
+    if (!collected_pairs.length) return []
+
+    const unique_pairs = []
+    const seen_tokens = new Set()
+
+    for (const pair of shuffle_array(collected_pairs)){
+      const token_address = pair.baseToken?.address || pair.pairAddress
+      if (!token_address) continue
+      if (seen_tokens.has(token_address)) continue
+
+      seen_tokens.add(token_address)
+      unique_pairs.push(pair)
+
+      if (unique_pairs.length >= DISCOVERY_BATCH_SIZE) break
+    }
+
+    const mapped = unique_pairs.map(map_pair_to_project)
 
     mapped.forEach(project => {
       if (project.pair_address){
@@ -697,6 +727,7 @@ async function fetch_discovery_projects(){
     discovery_loading = false
   }
 }
+
 async function ensure_discovery_buffer(){
   const q = (search_input.value || "").trim()
   if (q) return
